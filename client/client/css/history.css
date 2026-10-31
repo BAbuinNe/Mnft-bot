@@ -1,0 +1,259 @@
+#history {
+    padding: 75px 8px 0
+}
+
+.history-list {
+    margin-top: 8px;
+}
+
+.history-container {
+    padding: 0 8px;
+    margin-top: 3px;
+}
+
+.history-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 8px;
+    transition: all 0.2s ease;
+}
+
+.history-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.history-item-type {
+    font-weight: 700;
+    font-size: 0.95em;
+}
+
+.history-item-type.deposit {
+    color: var(--success);
+}
+
+.history-item-type.withdrawal {
+    color: var(--accent);
+}
+
+.history-item-amount {
+    font-weight: 600;
+    font-size: 1.1em;
+    border-right: 5px;
+}
+
+.history-item-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-item-date {
+    color: var(--text-secondary);
+    font-size: 0.85em;
+}
+
+.history-item-status {
+    font-size: 0.8em;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.history-item-status.pending {
+    background: rgba(255, 215, 0, 0.15);
+    color: #FFD700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.history-item-status.completed {
+    background: rgba(0, 212, 170, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(0, 212, 170, 0.3);
+}
+
+.history-item-status.failed {
+    background: rgba(255, 71, 87, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(255, 71, 87, 0.3);
+}
+
+.empty-history {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-history .empty-icon {
+    font-size: 2.5em;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-history .empty-hint {
+    font-size: 0.85em;
+    margin-top: 8px;
+    color: var(--text-tertiary);
+}
+
+.history-item-type.nft-transfer-out {
+    color: var(--warning);
+}
+
+.history-item-type.nft-transfer-in {
+    color: var(--success);
+}
+
+.history-icon {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-dark);
+    border-radius: 17px;
+}
+
+.history-item-notes {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    margin: 6px 0;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.transfer-item {
+    border-left: 3px solid var(--warning);
+}
+
+.transfer-item.incoming {
+    border-left-color: var(--success);
+}
+
+/* Скрываем блок суммы если пустой */
+.history-item-amount:empty {
+    display: none;
+}
+
+.history-item-nft-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 0;
+    padding: 8px;
+    background: var(--surface-dark);
+    border-radius: 8px;
+}
+
+.history-nft-icon {
+    font-size: 2em;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.history-nft-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.history-nft-name {
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.history-nft-details {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 8px;
+}
+
+/* Обновляем отступы для истории с NFT */
+.history-item:has(.history-item-nft-preview) {
+    padding-bottom: 10px;
+}
+
+.history-nft-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 1.8em;
+    background: none !important;
+}
+
+.history-item-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.history-item-info {
+    flex: 1;
+}
+
+/* Стили для глобальной истории продаж */
+.global-sale-item {
+    background: var(--surface);
+    border-radius: 27px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid var(--surface-dark);
+}
+
+.history-item-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.history-item-nft {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.history-item-users {
+    display: flex;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.mini-nft-image,
+.medium-nft-image {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.mini-upgraded-nft,
+.medium-upgraded-nft {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+/* Адаптивность для истории */
+.history-icon {
+    flex-shrink: 0;
+}
+
+.history-icon .mini-upgraded-nft img,
+.history-icon .medium-upgraded-nft img {
+    border-radius: 6px;
+}
+

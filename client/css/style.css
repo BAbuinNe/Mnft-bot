@@ -1,0 +1,1394 @@
+:root {
+    --background: #1a1a1f;
+    --surface: #2a2a30;    
+    --surface-light: #373740;
+    --surface-dark: #232329; 
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b8; 
+    --text-primary-nft: #e1e1e1;
+    --text-tertiary: #8a8a92;
+    --primary: #2a7fff;
+    --primary-dark: #1a5fcc;
+    --primary-light: #4a9fff;
+    --accent: #ff4757;
+    --success: #00d4aa;
+    --border: #3a3a42;
+    --border-light: #46464e;
+    --card-bg: #2c2c34;
+    --gradient: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4); 
+    --shadow-small: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --avatar-background: rgba(42, 127, 255, 0.1);
+    --confirm: linear-gradient(135deg, #10b981, #059669);
+    --rarity: #001e43;
+    --rarity-background: #1880ff94;
+}
+
+#app {
+    padding: 0px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Скрытие полосы прокрутки для всех элементов */
+*::-webkit-scrollbar {
+    display: none;
+}
+
+* {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--background);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+    padding-bottom: 30px;
+}
+
+
+/* Main Content */
+.main-content {
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Sections */
+.section {
+    display: none;
+    overflow-y: auto;
+    max-height: calc(100vh - 70px);
+    padding-bottom: 20px;
+}
+
+.section.active {
+    display: block;
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hero Section */
+.hero-section {
+    text-align: center;
+    padding: 10px 0 20px;
+    margin-bottom: 20px;
+}
+
+.hero-icon {
+    font-size: 3.5em;
+    margin-bottom: 15px;
+    color: var(--primary);
+}
+
+.hero-title {
+    font-size: 1.6em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.hero-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1em;
+}
+
+/* Glass Morphism Components - обновленные */
+.glass-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+/* Header */
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: 8px;
+    margin: 8px 8px 0;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--gradient);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+}
+
+.logo-text {
+    font-weight: 700;
+    font-size: 1.2em;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Фон за аватаркой */
+.avatar-background {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 130px;
+    height: 130px;
+    background: var(--avatar-background);
+    border-radius: 50%;
+    z-index: 1;
+    filter: blur(10px);
+}
+
+.avatar {
+    width: 100px;
+    height: 100px;
+    background: var(--gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 2em;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-name {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    /* height: 30px; */
+    color: var(--text-primary);
+    line-height: 1.2;
+    text-align: center;
+    flex: 0 1 auto;
+    z-index: 3; 
+}
+
+.profile-id {
+    color: var(--text-primary);
+    background: var(--header-element-bg);
+    border: 1px solid var(--header-element-border);
+    box-shadow: 0 1px 1px var(--header-element-box);
+    font-size: 0.95em;
+    padding: 6px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+}
+
+#profileId {
+    padding-left: 5px;
+}
+
+/* Wallet Connect Styles */
+.wallet-connect-container {
+    margin: 20px auto 15px;
+    text-align: center;
+    max-width: 300px;
+}
+
+#custom-wallet-button {
+    width: 100%;
+}
+
+.wallet-text-button {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: var(--primary);
+    padding: 10px 0;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+}
+
+.wallet-text-button .wallet-icon {
+    font-size: 1.1em;
+}
+
+/* History Section */
+.history-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.history-item.minimal {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+}
+
+/* Form Elements */
+.glass-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--surface-dark);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 16px;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--surface);
+}
+
+.glass-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* Buttons */
+.liquid-button {
+    width: 100%;
+    padding: 16px 20px;
+    background: var(--gradient);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.liquid-button:active {
+    transform: translateY(0);
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    bottom: 20px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    background: var(--background);
+    display: flex;
+    justify-content: space-evenly;
+    padding: 8px 0px;
+    z-index: 100;
+    height: 70px;
+    max-width: 500px; 
+    width: calc(100%);
+    margin: 0 auto;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+    min-width: 60px;
+}
+
+.nav-item.active {
+    opacity: 1;
+    background: var(--surface-light);
+}
+
+.nav-icon {
+    font-size: 1.2em;
+    transition: all 0.2s ease;
+    margin-top: 5px;
+    width: 22px;
+    height: 22px;
+}
+
+.nav-item.active .nav-icon {
+    color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.nav-item span {
+    font-size: 0.65em;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transform: translateY(-1px);
+}
+
+.nav-item.active span {
+    color: var(--primary);
+}
+
+/* Реферальная программа - полноценная секция */
+#referral {
+    display: none;
+    padding: 0 8px;
+    padding-bottom: 20px;
+    overflow-y: auto;
+}
+
+#referral.active {
+    display: block;
+}
+
+#referral .hero-section {
+    text-align: center;
+    padding: 30px 0 20px;
+    margin-bottom: 20px;
+    margin-top: 55px;
+}
+
+#referral .hero-title {
+    font-size: 1.6em;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+#referral .hero-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1em;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(13, 13, 16, 0.95);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--surface);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface-dark);
+}
+
+.modal-header h2 {
+    font-size: 1.3em;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 1.5em;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.modal-body {
+    padding: 8px;
+    overflow-y: auto;
+    max-height: calc(80vh - 80px);
+}
+
+/* Filter Modal */
+.filter-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(13, 13, 16, 0.7);
+    z-index: 1000;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+
+.filter-modal.active {
+    display: flex;
+}
+
+.filter-modal-content {
+    background: var(--surface-dark);
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    /* border: 1px solid var(--border); */
+    border-bottom: none;
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5);
+    padding-bottom: 20px;
+}
+
+/* Закрытие при клике вне окна */
+.filter-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+/* Область для закрытия (вне контента) */
+.filter-modal .close-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 15%; /* Верхняя часть экрана для закрытия свайпом/кликом */
+    cursor: pointer;
+}
+
+.filter-modal.active .filter-modal-content {
+    transform: translateY(0);
+}
+
+.filter-modal-header {
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filter-modal-header h3 {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.filter-modal-close {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    color: var(--text-primary);
+    font-size: 1.2em;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.filter-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px;
+    max-height: calc(85vh - 140px);
+}
+
+/* Filter Buttons Grid для модального окна Фильтр */
+.filter-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-button-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    min-height: 44px;
+}
+
+.filter-button-option.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.filter-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px;
+}
+
+.filter-modal-apply,
+.filter-modal-clear {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 20px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-modal-apply {
+    background: var(--primary);
+    color: var(--text-primary-nft);
+    border: 1px solid var(--border);
+}
+
+.filter-modal-clear {
+    background: var(--accent);
+    color: white;
+}
+
+.filter-modal-apply:active,
+.filter-modal-clear:active {
+    transform: translateY(1px);
+}
+
+/* Filter Items */
+/* Стили для изображений в фильтрах */
+.filter-item-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    overflow: hidden;
+    padding-right: 5px;
+    flex-shrink: 0;
+}
+
+.filter-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-item:last-child {
+    margin-bottom: 0;
+}
+
+.filter-item-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    margin-right: 14px;
+    min-width: 0;
+}
+
+.filter-item-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+}
+
+.filter-item-count {
+    color: var(--text-secondary);
+    font-size: 0.85em;
+    background: var(--surface-dark);
+    padding: 3px 8px;
+    border-radius: 8px;
+}
+
+.filter-item-checkbox {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    margin-left: 10px;
+}
+
+.filter-item-checkbox input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.filter-item-checkbox label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    background: var(--surface-dark);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-item-checkbox input:checked + label {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.filter-item-checkbox input:checked + label::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+/* Filter Option Groups */
+.filter-option-group {
+    margin-bottom: 20px;
+}
+
+.filter-option-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95em;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23f0f0f0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 12px;
+    padding-right: 40px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--surface-light);
+}
+
+/* Allow text selection for inputs */
+input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin: 20px auto 0;
+    padding: 0 16px;
+    max-width: 100%;
+    width: 100%;
+}
+
+.pagination button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+    font-size: 0.9em;
+    font-weight: 600;
+    min-width: 80px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pagination span {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    font-weight: 500;
+    min-width: 120px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Стили для списков с прокруткой */
+.referrals-list,
+#historyList,
+.filter-modal-body,
+.modal-body {
+    overflow-y: auto;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    
+    .avatar {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .avatar-background {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .profile-name {
+        font-size: 1.3em;
+    }
+    
+    .nav-item span {
+        font-size: 0.6em;
+    }
+    
+    .filter-buttons-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 380px) {
+    
+    .avatar {
+        width: 85px;
+        height: 85px;
+        font-size: 1.8em;
+    }
+    
+    .avatar-background {
+        width: 115px;
+        height: 115px;
+    }
+    
+    .profile-name {
+        font-size: 1.2em;
+    }
+    
+    .profile-id {
+        font-size: 0.85em;
+        padding: 4px 12px;
+    }
+}
+/* Стили для главной секции */
+.home-header {
+    position: relative;
+    text-align: center;
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Заголовок "Новые M-NFT" */
+.new-nfts-title-container {
+    width: 100%;
+    padding: 0 8px;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+.new-nfts-title {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: left;
+    margin: 0;
+    padding-left: 8px;
+}
+
+/* Секция подарков */
+.gifts-section {
+    padding: 0 8px;
+}
+
+.gifts-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    padding-left: 8px;
+}
+
+.gifts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    min-height: 200px;
+}
+
+.gift-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gift-item:active {
+    transform: scale(0.98);
+}
+
+.gift-item-image {
+    height: 100px;
+    background: var(--surface-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.gift-nft-icon {
+    font-size: 2.5em;
+}
+
+.gift-rarity-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6em;
+    font-weight: 700;
+    color: white;
+    border: 2px solid var(--surface);
+}
+
+.gift-item-info {
+    padding: 12px;
+}
+
+.gift-nft-name {
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gift-nft-collection {
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.gift-action-button {
+    width: 100%;
+    padding: 8px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gift-action-button:active {
+    background: var(--primary-dark);
+    transform: translateY(1px);
+}
+
+.gift-action-button.disabled {
+    background: var(--surface-light);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+}
+
+.empty-gifts {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-gifts .empty-icon {
+    font-size: 2.5em;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.empty-gifts .empty-hint {
+    font-size: 0.85em;
+    margin-top: 8px;
+    color: var(--text-tertiary);
+}
+
+/* Модальное окно выбора фильтра */
+.filter-selection-modal {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--surface-dark);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    padding: 20px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+}
+
+.filter-selection-modal.active {
+    transform: translateY(0);
+}
+
+.filter-options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-option {
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-option.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.filter-option:active {
+    transform: scale(0.98);
+}
+/* Индикатор загрузки для покупки */
+.purchase-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.purchase-loading-content {
+    background: var(--surface);
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 80%;
+}
+
+
+.filter-cards-standard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 0 8px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.filter-card-standard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 70px;
+    text-align: center;
+}
+
+.filter-card-standard:active {
+    transform: scale(0.98);
+    background: var(--surface-light);
+}
+
+.filter-card-standard.active {
+    border-color: var(--primary);
+    background: var(--surface-light);
+}
+
+.filter-card-standard-icon {
+    font-size: 1.2em;
+    width: 32px;
+    height: 32px;
+    background: var(--surface-dark);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.filter-card-standard-content {
+    width: 100%;
+}
+
+.filter-card-standard-title {
+    font-size: 0.7em;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.filter-card-standard-value {
+    font-size: 0.75em;
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.filter-card-standard-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6em;
+    font-weight: 700;
+    border: 2px solid var(--surface);
+}
+
+/* Медиа-запросы для надежного отображения 3 в строку */
+@media (max-width: 480px) {
+    .filter-cards-standard {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    
+    .filter-card-standard {
+        padding: 8px 6px;
+        min-height: 65px;
+    }
+    
+    .filter-card-standard-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 1em;
+        margin-bottom: 4px;
+    }
+    
+    .filter-card-standard-title {
+        font-size: 0.65em;
+    }
+    
+    .filter-card-standard-value {
+        font-size: 0.7em;
+    }
+}
+
+@media (max-width: 350px) {
+    .filter-cards-standard {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+    }
+    
+    .filter-card-standard {
+        padding: 6px 4px;
+        min-height: 60px;
+    }
+}
+
+
+.rarity-circle {
+    width: 100%;
+    padding: 2px 7px;
+}
+
+.rarity-circle-container{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--rarity-background);
+    border-radius: 20px;
+    font-size: 0.7em;
+    font-weight: 700;
+    color: var(--rarity);
+}
+
+/* Обновляем стиль для строк с компонентами */
+.nft-info-row .nft-info-value {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    gap: 8px;
+}
+
+.component-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Фильтры в профиле, маркете и главной */
+.profile-filter-card-icon svg,
+#market .profile-filter-card-icon svg,
+#home .profile-filter-card-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+    color: var(--text-secondary) !important;
+    transition: all 0.2s ease;
+}
+
+/* Реферальная программа */
+.referral-button-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+    color: var(--text-primary-nft) !important;
+}
+
+.referral-button-card:active .referral-button-icon svg {
+    color: var(--primary) !important;
+}
+
+/* Заголовки секций */
+.hero-section svg {
+    width: 32px !important;  /* Оставляем больше для hero секций */
+    height: 32px !important;
+    color: var(--primary) !important;
+    opacity: 1;
+}
+
+/* История и другие иконки */
+.empty-history svg,
+.empty-referrals svg {
+    width: 24px !important;
+    height: 24px !important;
+    color: var(--text-tertiary) !important;
+    opacity: 0.5;
+}
+
+.nft-rarity-sticker {
+    display: flex;
+    position: absolute;
+    align-items: center;
+    top: 9px;
+    color: var(--text-primary-nft);
+    right: -34px;
+    min-width: 110px;
+    justify-content: center;
+    height: 25px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transform: rotate(45deg);
+    z-index: 20;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+}
+
+.nft-rarity-sticker.market {
+    background: linear-gradient(135deg, #518f53, #4f9b53);
+    border-color: #4CAF50;
+    box-shadow: 0 3px 15px rgba(76, 175, 80, 0.4);
+}
+
+/* Стикеры редкости с красивыми градиентами и тенями */
+.nft-rarity-sticker.legendary {
+    background: linear-gradient(135deg, #ffd700, #b8860b);
+    border-color: #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4);
+}
+
+.nft-rarity-sticker.epic {
+    background: linear-gradient(135deg, #9b5de5, #6b3fa0);
+    border-color: #9b5de5;
+    box-shadow: 0 0 20px rgba(155, 93, 229, 0.6), 0 0 40px rgba(155, 93, 229, 0.4);
+}
+
+.nft-rarity-sticker.rare {
+    background: linear-gradient(135deg, #0070f3, #0047ab);
+    border-color: #0070f3;
+    box-shadow: 0 0 20px rgba(0, 112, 243, 0.6), 0 0 40px rgba(0, 112, 243, 0.4);
+}
+
+.nft-rarity-sticker.common {
+    background: linear-gradient(135deg, #808080, #4a4a4a);
+    border-color: #808080;
+    box-shadow: 0 0 15px rgba(128, 128, 128, 0.4), 0 0 25px rgba(128, 128, 128, 0.3);
+}
+
+.nft-rarity-sticker-container {
+    text-align: center;
+}
+
+.nft-rarity-sticker-container {
+    white-space: nowrap;    
+    overflow: hidden; 
+    text-overflow: ".";    
+    max-width: 110px;       
+    display: block;   
+}
+
+.filter-group-header{
+    padding: 0 8px 16px;
+    font-weight: 600;
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    background: var(--surface-dark);
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

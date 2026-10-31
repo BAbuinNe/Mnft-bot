@@ -1,0 +1,964 @@
+/* Profile Tabs */
+
+
+
+.tabs-container {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 4px;
+    margin: 0 8px 15px 8px;
+}
+
+.ref-container{
+    padding: 12px 8px;
+}
+
+.tab-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 3px;
+    background: transparent;
+    border: none;
+    border-radius: 16px;
+    color: var(--text-secondary);
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-button.active {
+    background: var(--surface-light);
+    color: var(--text-primary);
+    box-shadow: -1px 1px 0px rgba(0, 0, 0, 0.4);
+}
+
+.tab-button.active .tab-icon {
+    transform: scale(1.1);
+}
+
+.tab-icon {
+    font-size: 1.1em;
+    transition: transform 0.2s ease;
+}
+
+.tab-text {
+    white-space: nowrap;
+}
+
+/* Profile Tab Content */
+.profile-tab-content {
+    display: none;
+    overflow-y: auto;
+}
+
+.profile-tab-content.active {
+    display: block;
+}
+
+/* Referral Button Card - меньшая версия */
+.referral-button-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+
+.referral-button-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.referral-button-icon {
+    font-size: 1.2em;
+    width: 36px;
+    height: 36px;
+    background: var(--gradient);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.referral-button-text {
+    flex: 1;
+}
+
+.referral-button-text h3 {
+    font-size: 0.95em;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.referral-button-arrow {
+    font-size: 1.1em;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+/* Filter Buttons */
+.filter-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 8px 0 16px;
+    margin: 0 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.filter-buttons::-webkit-scrollbar {
+    display: none;
+}
+
+.filter-button {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 10px;
+    min-width: 60px;
+    position: relative;
+}
+
+.filter-button.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(42, 127, 255, 0.3);
+}
+
+.filter-button.active .filter-icon {
+    color: white;
+}
+
+.filter-icon {
+    font-size: 1.4em;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+    transition: color 0.2s ease;
+}
+
+.filter-text {
+    line-height: 1.1;
+    text-align: center;
+    font-size: 0.75em;
+}
+
+.filter-button::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 18px;
+    height: 18px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.6em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    z-index: 2;
+    transform: scale(0);
+    transition: all 0.2s ease;
+    border: 2px solid var(--surface);
+}
+
+.filter-button.active::after {
+    content: attr(data-count);
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Inventory Grid */
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 0 8px;
+    margin-bottom: 0px;
+    overflow-y: auto;
+}
+
+.inventory-grid::-webkit-scrollbar {
+    display: none;
+}
+
+.inventory-item {
+    border-radius: 24px;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: auto;
+    min-height: 120px; 
+    isolation: isolate;
+}
+
+.inventory-item-image {
+    position: relative;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 12px 12px 0 0;
+    z-index: 2; 
+}
+
+.nft-icon {
+    font-size: 3em;
+}
+
+.nft-rarity {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+    font-weight: 700;
+    color: white;
+    border: 2px solid var(--surface);
+}
+
+.inventory-item-info {
+    border-radius: 0 0 18px 18px;
+    overflow: hidden; 
+    color: var(--text-secondary);
+}
+
+.nft-name {
+    font-size: 0.95em;
+    font-weight: 600;
+    padding: 0 10px 5px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Стиль для паттерна на всей карточке */
+.card-pattern {
+    z-index: 1;
+}
+
+/* Бейдж продажи должен быть выше всего */
+.on-sale-badge {
+    z-index: 3;
+}
+
+.nft-collection {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.nft-attributes {
+    display: flex;
+    gap: 4px;
+}
+
+.attribute {
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    background: var(--surface-dark);
+    color: var(--text-secondary);
+}
+
+.empty-inventory {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-inventory .empty-icon {
+    font-size: 3em;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-inventory .empty-hint {
+    font-size: 0.9em;
+    margin-top: 8px;
+    color: var(--text-tertiary);
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .filter-buttons {
+        gap: 6px;
+    }
+    
+    .filter-button {
+        padding: 8px;
+        min-width: 55px;
+    }
+    
+    .filter-icon {
+        font-size: 1.2em;
+    }
+    
+    .filter-text {
+        font-size: 0.7em;
+    }
+    
+    .inventory-item-image {
+        height: 100px;
+    }
+    
+    .referral-button-card {
+        padding: 12px 14px;
+    }
+    .referral-button-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1em;
+    }
+    
+    .referral-button-text h3 {
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 350px) {
+    .tab-text {
+        display: none;
+    }
+    .tab-button {
+        justify-content: center;
+    }
+    
+    .referral-button-content {
+        gap: 8px;
+    }
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--surface);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.nav-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+.profile-header {
+    text-align: center;
+    padding-bottom: 15px;
+    position: relative;
+    padding-top: 115px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Позиционирование виджета баланса */
+.balance-widget {
+    position: absolute;
+    top: auto;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 3;
+}
+
+.fiks {
+    top: 95px;
+}
+
+.home-header .balance-widget {
+    position: absolute;
+    top: auto;
+    right: 10px;
+    z-index: 3;
+}
+
+.balance-badge {
+    color: var(--text-primary);
+    background: var(--header-element-bg);
+    border: 1px solid var(--header-element-border);
+    box-shadow: 0 1px 1px var(--header-element-box);
+    font-size: 0.95em;
+    padding: 1px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.balance-icon {
+    font-size: 14px;
+    color: #FFD700;
+    padding-left: 4px;
+}
+
+.balance-value {
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 30px;
+    text-align: center;
+}
+
+.balance-add-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 1px 1px var(--header-element-box);
+    color: var(--text-primary);
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    margin-left: 3px;
+}
+
+.balance-add-btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 4px rgba(42, 127, 255, 0.3);
+}
+
+.pinned-badge {
+    position: absolute;
+    top: 4px;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+    transform: rotate(45deg);
+    color: var(--text-primary-nft);
+    display: flex;
+    font-size: 11px;
+    z-index: 10;
+}
+
+/* Стили для прямоугольных фильтров в профиле (как в главной) */
+.profile-filter-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+    margin-bottom: 20px;
+    overflow: hidden;
+    min-width: 0;
+    padding: 0 8px;
+}
+
+.profile-filter-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.profile-filter-card:active {
+    transform: scale(0.98);
+    filter: brightness(0.95);
+    background: var(--surface-light);
+}
+
+.profile-filter-card.active {
+    border-color: var(--primary);
+    background: var(--surface-light);
+}
+
+.profile-filter-card-icon {
+    font-size: 1.2em;
+    width: 35px;
+    height: 35px;
+    background: var(--surface-dark);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-filter-card-content {
+    flex: 1;
+    text-align: left;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-left: 5px;
+}
+
+.profile-filter-card-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    font-weight: 500;
+    line-height: 1.2;
+    width: 100%; 
+    display: block;
+}
+
+.profile-filter-card-value {
+    font-size: 0.75em;
+    color: var(--text-primary);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    min-width: 0;
+}
+
+.profile-filter-card-arrow {
+    color: var(--text-tertiary);
+    font-size: 0.9em;
+    flex-shrink: 0;
+}
+
+/* Анимация для бейджа */
+@keyframes pulse-gold {
+    0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(255, 215, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+/* Обновим стиль для карточки NFT на продаже */
+.inventory-item[data-for-sale="true"] {
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), transparent);
+}
+
+.nft-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+/* Для загрузки картинок */
+.nft-image.loading {
+    opacity: 0.5;
+    background: var(--surface);
+}
+
+/* Запасной вариант если картинка не загрузится */
+.nft-image::after {
+    content: '🎴';
+    position: absolute;
+    font-size: 2em;
+    opacity: 0.3;
+    display: none;
+}
+
+.nft-image[src=""]::after {
+    display: block;
+}
+.upgraded-nft-container {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Для загрузки SVG иконок */
+.upgraded-nft-container svg,
+.upgraded-nft-container img[src*=".svg"] {
+    transition: opacity 0.3s ease;
+}
+
+.on-sale-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    z-index: 10;
+}
+
+.avatar {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.worn-nft-avatar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-dark);
+}
+.profile-name-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin: 8px 0;
+    position: relative;
+}
+
+.worn-nft-badge {
+    display: flex;
+    align-items: center;
+    border-radius: 20px;
+    gap: 6px;
+    flex-shrink: 0; 
+    margin-left: 0;
+}
+
+.worn-nft-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.worn-nft-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.profile-name-container.has-worn-nft {
+    margin-left: 25px;
+}
+
+.profile-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.profile-header-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 0 0 24px 24px;
+}
+
+.profile-header-pattern svg {
+    width: 100%;
+    height: 100%;
+}
+
+.profile-header-pattern path {
+    vector-effect: non-scaling-stroke;
+}
+
+.profile-filter-card.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(0.5);
+}
+
+.profile-filter-card.disabled .profile-filter-card-icon,
+.profile-filter-card.disabled .profile-filter-card-content {
+    opacity: 0.7;
+}
+
+.settings-button {
+    position: absolute;
+    top: 95px;
+    left: 15px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--header-element-bg);
+    border: 1px solid var(--header-element-border);
+    box-shadow: 0 1px 1px var(--header-element-box);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+    color: var(--text-primary);
+} 
+
+.settings-button:active {
+    transform: scale(0.95);
+}
+
+.settings-button svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Контекстное меню настроек */
+.settings-context-menu {
+    position: absolute;
+    background: var(--surface-dark);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    min-width: 200px;
+    box-shadow: 0 8px 12px rgba(65, 65, 65, 0.4);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+
+.settings-context-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.settings-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.settings-menu-item:last-child {
+    border-bottom: none;
+}
+
+.settings-menu-item-label {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.settings-menu-item-value {
+    color: var(--text-primary);
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+/* Переключатель темы */
+.theme-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 2px;
+    border: 1px solid var(--border);
+}
+
+.theme-option {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 16px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-option.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(42, 127, 255, 0.3);
+}
+
+.theme-option:active {
+    transform: scale(0.95);
+}
+
+/* Затемнение фона */
+.settings-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    z-index: 999;
+}
+
+/* Анимация появления */
+@keyframes menuPopIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.settings-context-menu.active {
+    animation: menuPopIn 0.2s ease forwards;
+}
+
+/* Добавьте в один из CSS файлов, например в profile.css */
+
+.profile-level-container {
+    width: 100%;
+    padding: 0 16px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+}
+
+.profile-level {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.level-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.level-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.level-progress {
+    width: 100%;
+    height: 6px;
+    background: var(--surface-light);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.level-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+/* Для случая когда надет NFT */
+.worn-nft-active .profile-level .level-label,
+.worn-nft-active .profile-level .level-value {
+    color: var(--text-primary-nft);
+    -webkit-text-fill-color: currentColor;
+    background: none;
+}
+
+/* Адаптация для светлой темы */
+[data-theme="light"] .level-progress {
+    background: var(--surface-dark);
+}
+
+/* Добавьте в profile.css */
+
+.profile-name-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.level-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 20px;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(42, 127, 255, 0.3);
+}
+
+/* Для случая когда надет NFT */
+.worn-nft-active .level-badge {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    color: var(--text-primary-nft);
+    box-shadow: none;
+}

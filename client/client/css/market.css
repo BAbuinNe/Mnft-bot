@@ -1,0 +1,384 @@
+#market {
+    padding-top: 70px;
+}
+/* Хедер маркета */
+.market-header {
+    position: relative;
+    text-align: center;
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Наследуем стили баланса из профиля */
+.market-header .balance-widget {
+    position: absolute;
+    right: 10px;
+    z-index: 3;
+}
+
+.market-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 0 8px;
+    margin-bottom: 20px;
+}
+
+/* Карточка NFT - ТАКАЯ ЖЕ как в инвентаре */
+.market-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    animation: slideInUp 0.3s ease-out;
+    animation-fill-mode: both;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.mark {
+    padding-left: 5px;
+    text-align: left;
+    align-items: flex-start;
+    margin-bottom: 0;
+}
+/* Изображение NFT - как в инвентаре */
+.market-item-image {
+    position: relative;
+    height: 120px;
+    background: var(--surface-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* Иконка продажи - маленький бейдж */
+.sale-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--accent);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 0.7em;
+    font-weight: 700;
+    z-index: 2;
+}
+
+.market-nft-icon {
+    font-size: 3em;
+}
+
+/* Информация о NFT - как в инвентаре */
+.market-item-info {
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.market-nft-name {
+    font-size: 0.95em;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.market-nft-collection {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+/* Атрибуты - как в инвентаре */
+.market-nft-attributes {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.market-attribute {
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 15px;
+    font-weight: 600;
+    background: var(--surface-dark);
+    color: var(--text-secondary);
+}
+
+/* Прогресс-бар редкости - как в инвентаре */
+.market-rarity-progress {
+    margin-top: auto; /* Пушим вниз */
+    margin-bottom: 8px;
+}
+
+.market-rarity-progress-bar {
+    background: var(--surface-dark);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 2px;
+}
+
+.market-rarity-progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.market-rarity-percentage {
+    font-size: 0.7em;
+    color: var(--text-tertiary);
+}
+
+/* Кнопка покупки на ВСЮ ШИРИНУ */
+.market-buy-button-container {
+    padding: 0 6px 6px;
+    width: 100%;
+}
+
+.market-buy-button {
+    width: 100%;
+    padding: 9px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.market-buy-button:active {
+    transform: scale(0.98);
+}
+
+.market-fics {
+    padding: 10px 14px 0;
+}
+
+.market-buy-button:disabled {
+    background: var(--surface-light);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.market-buy-price {
+    font-weight: 500;
+}
+
+/* Состояние пустого маркета */
+.empty-market {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+
+.empty-market .empty-icon {
+    font-size: 3.5em;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-market .empty-hint {
+    font-size: 0.9em;
+    margin-top: 8px;
+    color: var(--text-tertiary);
+}
+
+/* Анимация появления */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.market-nft-rarity-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    color: white;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 2px solid var(--surface);
+}
+
+.market-nft-rarity-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 5px 0;
+}
+
+.market-rarity-progress-bar {
+    background: var(--surface-dark);
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 4px 0;
+}
+
+.market-rarity-progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.market-date-icon {
+    margin-right: 4px;
+    opacity: 0.7;
+}
+
+.market-seller-icon {
+    margin-right: 4px;
+    opacity: 0.7;
+}
+
+.market-owner-price {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%);
+    border: 2px solid var(--primary);
+    border-radius: 15px;
+    padding: 12px;
+    text-align: center;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.owner-price-label {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.owner-price-value {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 4px 0;
+}
+
+.owner-price-hint {
+    font-size: 0.7em;
+    color: var(--text-tertiary);
+    font-style: italic;
+    margin-top: 4px;
+}
+
+.owner-price-content {
+    width: 100%;
+    padding: 10px;
+    background: rgb(233, 233, 233);
+    color: #000000;
+    border: none;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.owner-price-label-single {
+    height: 18.75px;
+    font-size: 0.9em;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.owner-price-value-single {
+    height: 18.75px;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--surface-dark);
+}
+
+.owner-price-hint-single {
+    font-size: 0.75em;
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
+.filter-modal-upgrade {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+/* Добавим в существующий CSS файл */
+.upgraded-nft-container {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Улучшенный NFT должен занимать всю высоту карточки */
+.inventory-item-image-profile {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-height: 120px;
+}
+
+
+.profile-filter-card.model-disabled {
+    opacity: 0.5 !important;
+    pointer-events: none !important;
+    filter: grayscale(0.7) !important;
+    transition: all 0.3s ease;
+}
+
+.profile-filter-card.model-disabled .profile-filter-card-icon,
+.profile-filter-card.model-disabled .profile-filter-card-content {
+    opacity: 0.7;
+}
+
+.profile-filter-card.model-disabled .profile-filter-card-arrow {
+    opacity: 0.3;
+}
+
+/* Анимация для плавного изменения */
+.profile-filter-card {
+    transition: opacity 0.3s ease, filter 0.3s ease, transform 0.2s ease;
+}
+
+.market-nft-number {
+    font-size: 0.9em;
+    border-radius: 20px;
+}

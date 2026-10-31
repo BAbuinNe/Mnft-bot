@@ -1,0 +1,363 @@
+#rating {
+    padding-top: 70px;
+}
+
+.rating-podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 20px;
+    margin: 30px 10px 25px;
+    padding: 0 10px;
+}
+
+.podium-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    max-width: 120px;
+}
+
+.podium-item.first {
+    transform: scale(1.1);
+    z-index: 2;
+}
+
+.podium-avatar {
+    width: 90px;
+    height: 90px;
+    background: var(--gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8em;
+    border: 3px solid gold;
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+    margin-bottom: 8px;
+}
+
+.podium-item.second .podium-avatar {
+    width: 80px;
+    height: 80px;
+    border-color: silver;
+    box-shadow: 0 5px 15px rgba(192, 192, 192, 0.3);
+}
+
+.podium-item.third .podium-avatar {
+    width: 70px;
+    height: 70px;
+    border-color: #cd7f32;
+    box-shadow: 0 5px 15px rgba(205, 127, 50, 0.3);
+}
+
+.podium-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* ИСПРАВЛЕНО: текст просто обрезается, бейдж всегда виден */
+.podium-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-weight: 600;
+    color: var(--text-primary);
+    width: 100%;
+    max-width: 110px;
+    /* Текст обрезается */
+    white-space: nowrap;
+}
+
+.podium-name-text {
+    display: inline-block;
+    max-width: calc(100% - 28px); /* Оставляем место для бейджа (24px + отступы) */
+    overflow: hidden;
+    /* Убираем text-overflow: ellipsis */
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.podium-worn-nft {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0; /* Запрещаем сжиматься */
+    vertical-align: middle;
+}
+
+.podium-worn-nft img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.podium-count {
+    font-size: 0.75em;
+    color: var(--text-secondary);
+    background: var(--surface);
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 4px;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.rating-list {
+    margin: 20px 8px;
+}
+
+.rating-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    margin-bottom: 8px;
+}
+
+.rating-position {
+    width: 32px;
+    height: 32px;
+    background: var(--surface-dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9em;
+    color: var(--text-primary);
+    flex-shrink: 0;
+}
+
+.rating-list-avatar {
+    width: 44px;
+    height: 44px;
+    background: var(--gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    flex-shrink: 0;
+}
+
+.rating-list-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.rating-list-info {
+    flex: 1;
+    min-width: 0; /* Важно для корректной работы overflow */
+}
+
+/* ИСПРАВЛЕНО: текст просто обрезается, бейдж всегда виден */
+.rating-list-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    width: 100%;
+}
+
+.rating-list-name-text {
+    display: inline-block;
+    max-width: calc(100% - 32px); /* Оставляем место для бейджа (26px + отступы) */
+    overflow: hidden;
+    /* Убираем text-overflow: ellipsis */
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.worn-nft-mini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0; /* Запрещаем сжиматься */
+    vertical-align: middle;
+}
+
+.worn-nft-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rating-list-stats {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.rating-list-stats span {
+    color: #FFD700;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* Переключатель режимов рейтинга */
+.rating-mode-switch {
+    display: flex;
+    gap: 10px;
+    padding: 0 16px;
+    margin: 20px 0 15px;
+    justify-content: center;
+}
+
+.rating-mode-btn {
+    flex: 1;
+    max-width: 140px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.rating-mode-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.rating-mode-btn:active {
+    transform: scale(0.96);
+}
+
+/* Адаптация под светлую тему */
+.light-theme .worn-nft-mini,
+.light-theme .podium-worn-nft {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+
+.podium-avatar-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+/* Стили для PNG-короны первого места */
+.first-place-crown {
+    position: absolute;
+    top: -10px;
+    right: -5px;
+    z-index: 10;
+    animation: crownFloat 3s ease-in-out infinite;
+    display: none; /* По умолчанию скрыта */
+}
+
+/* Показываем корону только когда у первого места есть класс has-crown И мы в режиме рефералов */
+.podium-item.first.has-crown .first-place-crown {
+    display: block;
+}
+
+.first-place-crown .crown-image {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(255, 215, 0, 0.6));
+}
+
+/* Fallback для эмодзи если PNG не загрузился */
+.first-place-crown.crown-fallback {
+    font-size: 24px;
+    line-height: 1;
+}
+
+/* Анимация парения для короны */
+@keyframes crownFloat {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        filter: drop-shadow(0 4px 8px rgba(255, 215, 0, 0.5));
+    }
+    50% {
+        transform: translateY(-3px) rotate(2deg);
+        filter: drop-shadow(0 8px 16px rgba(255, 215, 0, 0.8));
+    }
+}
+
+/* Стили для первого места в режиме рефералов */
+.podium-item.first.has-crown .podium-avatar {
+    border-color: #FFD700;
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+    animation: firstPlaceGlow 3s ease-in-out infinite;
+}
+
+@keyframes firstPlaceGlow {
+    0%, 100% {
+        box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 8px 30px rgba(255, 215, 0, 0.7);
+    }
+}
+
+/* Адаптация под мобильные устройства */
+@media (max-width: 480px) {
+    .first-place-crown {
+        top: -12px;
+        right: -8px;
+    }
+    
+    .first-place-crown .crown-image {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .first-place-crown.crown-fallback {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 380px) {
+    .first-place-crown {
+        top: -10px;
+        right: -6px;
+    }
+    
+    .first-place-crown .crown-image {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .first-place-crown.crown-fallback {
+        font-size: 20px;
+    }
+}
+
+/* Стили для первого места в режиме холдеров (без короны) */
+.podium-item.first:not(.has-crown) .podium-avatar {
+    border-color: gold;
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+}

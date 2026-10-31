@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ftern Stars | The best stars marketplace</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <script src="https://unpkg.com/@tonconnect/sdk@latest/dist/tonconnect-sdk.min.js"></script>
+    <script src="https://unpkg.com/@ton/core"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/nft-modal.css">
+    <link rel="stylesheet" href="css/referral.css">
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/balance.css">
+    <link rel="stylesheet" href="css/history.css">
+    <link rel="stylesheet" href="css/market.css">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/level-modal.css">
+    <link rel="stylesheet" href="css/upgrade-modal.css">
+    <link rel="stylesheet" href="css/transfer-modal.css">
+    <link rel="stylesheet" href="css/nft-menu.css">
+    <link rel="stylesheet" href="css/rating.css">
+    <meta name="theme-color" content="#0088cc">
+    <meta name="color-scheme" content="dark">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Content-Security-Policy" 
+      content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;
+               script-src * 'unsafe-inline' 'unsafe-eval' blob: data:;
+               connect-src *;
+               style-src * 'unsafe-inline';
+               img-src * data: blob:;">
+</head>
+<body>
+    <div id="app">
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Profile Section -->
+            <div id="profile" class="section">
+                <div class="profile-header">
+                    <div class="avatar-background"></div>
+                    <div class="avatar">
+                        <img id="userAvatar" src="" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
+                        <span id="avatarFallback">👤</span>
+                    </div>
+                    <div class="settings-button" onclick="openSettings(event)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M12 14.93A2.93 2.93 0 1 1 14.93 12A2.93 2.93 0 0 1 12 14.93m0-4.36A1.43 1.43 0 1 0 13.43 12A1.43 1.43 0 0 0 12 10.57"/><path fill="currentColor" d="M12.06 20.75a2.22 2.22 0 0 1-2.21-2.24a.48.48 0 0 0-.29-.42a.51.51 0 0 0-.56.09a2.24 2.24 0 0 1-1.56.65a2.26 2.26 0 0 1-1.58-.63a2.22 2.22 0 0 1 0-3.14a.5.5 0 0 0 .14-.52a.56.56 0 0 0-.48-.28a2.27 2.27 0 0 1-2.26-2.2a2.22 2.22 0 0 1 2.23-2.21a.48.48 0 0 0 .42-.29a.51.51 0 0 0-.09-.56a2.24 2.24 0 0 1-.65-1.56a2.2 2.2 0 0 1 .63-1.58a2.22 2.22 0 0 1 3.14 0a.58.58 0 0 0 .55.14a.6.6 0 0 0 .31-.48A2.27 2.27 0 0 1 12 3.25a2.22 2.22 0 0 1 2.2 2.24a.52.52 0 0 0 .28.44a.5.5 0 0 0 .52-.11a2.24 2.24 0 0 1 1.56-.65a2.13 2.13 0 0 1 1.58.63a2.22 2.22 0 0 1 0 3.14a.58.58 0 0 0-.11.55a.6.6 0 0 0 .48.31a2.27 2.27 0 0 1 2.24 2.2a2.22 2.22 0 0 1-2.24 2.2a.52.52 0 0 0-.44.28a.5.5 0 0 0 .11.52a2.24 2.24 0 0 1 .65 1.56a2.2 2.2 0 0 1-.63 1.58a2.22 2.22 0 0 1-3.14 0a.5.5 0 0 0-.52-.11a.56.56 0 0 0-.28.48a2.27 2.27 0 0 1-2.2 2.24m-2.71-4.21a1.8 1.8 0 0 1 .77.16a2 2 0 0 1 1.23 1.8a.74.74 0 0 0 .71.75a.76.76 0 0 0 .7-.77a2.06 2.06 0 0 1 1.18-1.85a2 2 0 0 1 2.18.43a.7.7 0 1 0 1-1a2 2 0 0 1-.42-2.18a2 2 0 0 1 1.82-1.18a.73.73 0 0 0 .74-.7a.75.75 0 0 0-.77-.7a2.1 2.1 0 0 1-1.85-1.22a2.05 2.05 0 0 1 .43-2.2a.7.7 0 1 0-1-1a2 2 0 0 1-3.36-1.4a.73.73 0 0 0-.7-.74a.75.75 0 0 0-.7.77a2.1 2.1 0 0 1-1.22 1.85a2.05 2.05 0 0 1-2.2-.43a.7.7 0 1 0-1 1a2 2 0 0 1 .41 2.18a2 2 0 0 1-1.8 1.23a.74.74 0 0 0-.75.71a.76.76 0 0 0 .77.7a2.06 2.06 0 0 1 1.85 1.18a2 2 0 0 1-.43 2.18a.7.7 0 1 0 1 1a2.06 2.06 0 0 1 1.41-.57m8-2.36"/></svg>
+                    </div>
+    
+                    <div class="balance-widget fiks">
+                        <div class="balance-badge" onclick="openBalanceModal()">
+                            <span class="balance-icon">⭐</span>
+                            <span class="balance-value" id="headerBalance">0</span>
+                            <button class="balance-add-btn">+</button>
+                        </div>
+                    </div>
+                    <h2 class="profile-name" id="profileUsername">@username</h2>
+                    <div  class="profile-id"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M16 0H8C6.9 0 6 .9 6 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V6zm4 18H8V2h7v5h5zM4 4v18h16v2H4c-1.1 0-2-.9-2-2V4zm6 6v2h8v-2zm0 4v2h5v-2z"/></svg><p id="profileId">ID: ...</p></div>
+                </div>
+
+                <!-- <div class="wallet-connect-container" style="margin-top: 15px;">
+                    <div id="custom-wallet-button"></div>
+                    <div id="tonconnect-ui" style="display: none;"></div>
+                </div> -->
+                <!-- Кнопка реферальной программы -->
+                <div class="ref-container">
+                    <div class="glass-card referral-button-card" onclick="openReferralModal()">
+                        <div class="referral-button-content">
+                            <div class="referral-button-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M16 17v2H2v-2s0-4 7-4s7 4 7 4m-3.5-9.5A3.5 3.5 0 1 0 9 11a3.5 3.5 0 0 0 3.5-3.5m3.44 5.5A5.32 5.32 0 0 1 18 17v2h4v-2s0-3.63-6.06-4M15 4a3.4 3.4 0 0 0-1.93.59a5 5 0 0 1 0 5.82A3.4 3.4 0 0 0 15 11a3.5 3.5 0 0 0 0-7"/></svg></div>
+                            <div class="referral-button-text">
+                                <h3>Реферальная программа</h3>
+                            </div>
+                            <div class="referral-button-arrow">→</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Profile Tabs -->
+                <div class="tabs-container">
+                    <button class="tab-button active" onclick="switchProfileTab('inventory')">
+                        <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.25h-3.75V5a1.89 1.89 0 0 0-2-1.75h-2.5a1.89 1.89 0 0 0-2 1.75v1.25H5A1.76 1.76 0 0 0 3.25 8v10A1.76 1.76 0 0 0 5 19.75h14A1.76 1.76 0 0 0 20.75 18V8A1.76 1.76 0 0 0 19 6.25M10.25 5c0-.08.19-.25.5-.25h2.5c.31 0 .5.17.5.25v1.25h-3.5ZM5 7.75h14a.25.25 0 0 1 .25.25v3.25H4.75V8A.25.25 0 0 1 5 7.75m3.75 5h6.5v1.5h-6.5ZM19 18.25H5a.25.25 0 0 1-.25-.25v-5.25h2.5V15a.76.76 0 0 0 .75.75h8a.76.76 0 0 0 .75-.75v-2.25h2.5V18a.25.25 0 0 1-.25.25"/></svg></span>
+                        <span class="tab-text">Инвентарь</span>
+                    </button>
+                    <button class="tab-button" onclick="switchProfileTab('history')">
+                        <span class="tab-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"><path fill="currentColor" d="M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8s-8 3.6-8 8s3.6 8 8 8m0-18c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12S6.5 2 12 2m5 11.9l-.7 1.3l-5.3-2.9V7h1.5v4.4z"/></svg></span>
+                        <span class="tab-text">История</span>
+                    </button>
+                </div>
+
+                <!-- Inventory Content -->
+                <div id="inventoryContent" class="profile-tab-content active">
+                    <div class="profile-filter-cards">
+                        <div class="profile-filter-card" onclick="openFilterModal('collection')">
+                            <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3 11h8V3H3m2 2h4v4H5m8 12h8v-8h-8m2 2h4v4h-4M3 21h8v-8H3m2 2h4v4H5m8-16v8h8V3m-2 6h-4V5h4Z"/></svg></div>
+                            <div class="profile-filter-card-content">
+                                <h4 class="profile-filter-card-title">Коллекция</h4>
+                                <p class="profile-filter-card-value" id="selectedCollectionFilter">Все</p>
+                            </div>
+                            <div class="profile-filter-card-arrow">▼</div>
+                        </div>
+                    
+                        <div class="profile-filter-card" onclick="openFilterModal('model')">
+                            <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M22 12v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a1 1 0 0 1-1-1V8a2 2 0 0 1 2-2h3.17A3 3 0 0 1 6 5a3 3 0 0 1 3-3c1 0 1.88.5 2.43 1.24v-.01L12 4l.57-.77v.01C13.12 2.5 14 2 15 2a3 3 0 0 1 3 3a3 3 0 0 1-.17 1H21a2 2 0 0 1 2 2v3a1 1 0 0 1-1 1M4 20h7v-8H4zm16 0v-8h-7v8zM9 4a1 1 0 0 0-1 1a1 1 0 0 0 1 1a1 1 0 0 0 1-1a1 1 0 0 0-1-1m6 0a1 1 0 0 0-1 1a1 1 0 0 0 1 1a1 1 0 0 0 1-1a1 1 0 0 0-1-1M3 8v2h8V8zm10 0v2h8V8z"/></svg></div>
+                            <div class="profile-filter-card-content">
+                                <h4 class="profile-filter-card-title">Модель</h4>
+                                <p class="profile-filter-card-value" id="selectedModelFilter">Все</p>
+                            </div>
+                            <div class="profile-filter-card-arrow">▼</div>
+                        </div>
+                    
+                        <div class="profile-filter-card" onclick="openFilterModal('symbol')">
+                            <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="m9.37 4l1.41 2.5L9.37 9H6.63l-1.4-2.5L6.63 4zm.88-2h-4.5c-.19 0-.36.11-.44.26L3.09 6.22L3 6.5l.09.28l2.22 3.96c.08.15.25.26.44.26h4.5c.19 0 .36-.11.44-.26l2.22-3.96l.09-.28l-.09-.28l-2.22-3.96a.5.5 0 0 0-.44-.26m8.37 7.5L20 12l-1.38 2.5h-2.74L14.5 12l1.38-2.5zm.88-2H15c-.19 0-.36.11-.44.26l-2.22 3.96l-.09.28l.09.28l2.22 3.96c.08.15.25.26.44.26h4.5c.19 0 .36-.11.44-.26l2.22-3.96l.09-.28l-.09-.28l-2.22-3.96a.5.5 0 0 0-.44-.26M9.37 15l1.41 2.5L9.37 20H6.63l-1.4-2.5l1.4-2.5zm.88-2h-4.5c-.19 0-.36.11-.44.26l-2.22 3.96l-.09.28l.09.28l2.22 3.96c.08.15.25.26.44.26h4.5c.19 0 .36-.11.44-.26l2.22-3.96l.09-.28l-.09-.28l-2.22-3.96a.5.5 0 0 0-.44-.26"/></svg></div>
+                            <div class="profile-filter-card-content">
+                                <h4 class="profile-filter-card-title">Узор</h4>
+                                <p class="profile-filter-card-value" id="selectedSymbolFilter">Все</p>
+                            </div>
+                            <div class="profile-filter-card-arrow">▼</div>
+                        </div>
+                    
+                        <div class="profile-filter-card" onclick="openFilterModal('background')">
+                            <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3.88 3c-.5.06-.88.5-.88 1v1h2V3zM7 3v2h2V3zm4 0v2h2V3zm4 0v2h2V3zm4 0v2h2V3.88c-.06-.5-.5-.88-1-.88zM3 7v2h2V7zm16 0v2h2V7zM3 11v2h2v-2zm16.31 1c-.13 0-.26.05-.36.14l-1.56 1.57l-.96-.96l-.71.71l.71.71l-4.46 4.46V21h2.38l4.45-4.46l.7.71l.72-.71l-.96-.96l1.56-1.55c.18-.2.18-.53 0-.72l-1.17-1.17a.48.48 0 0 0-.34-.14M3 15v2h2v-2zm14 0l.97.97L13.93 20l-.96-.96zM3 19v1.12c.06.5.5.88 1 .88h1v-2zm4 0v2h2v-2z"/></svg></div>
+                            <div class="profile-filter-card-content">
+                                <h4 class="profile-filter-card-title">Фон</h4>
+                                <p class="profile-filter-card-value" id="selectedBackgroundFilter">Все</p>
+                            </div>
+                            <div class="profile-filter-card-arrow">▼</div>
+                        </div>
+                    
+                        <div class="profile-filter-card" onclick="openFilterModal('filter')">
+                            <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 9.5L7.5 14h-5zM3 4h4v4H3zm2 16a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2M9 5v2h12V5zm0 14h12v-2H9zm0-6h12v-2H9z"/></svg></div>
+                            <div class="profile-filter-card-content">
+                                <h4 class="profile-filter-card-title">Фильтр</h4>
+                                <p class="profile-filter-card-value" id="selectedSortFilter">Нет</p>
+                            </div>
+                            <div class="profile-filter-card-arrow">▼</div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Items Grid -->
+                    <div class="inventory-grid" id="inventoryGrid">
+                        <!-- Items will be loaded here -->
+                        <div class="empty-inventory">
+                            <div class="empty-icon">🎁</div>
+                            <p>Инвентарь пуст</p>
+                            <p class="empty-hint">Здесь будут отображаться ваши NFT</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- History Content -->
+                <div id="historyContent" class="profile-tab-content">
+                    <div class="history-container" id="profileHistoryList">
+                        <!-- История будет загружена здесь -->
+                        <div class="empty-history">
+                            <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8s-8 3.6-8 8s3.6 8 8 8m0-18c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12S6.5 2 12 2m5 11.9l-.7 1.3l-5.3-2.9V7h1.5v4.4z"/></svg></div>
+                            <p>История транзакций пуста</p>
+                            <p class="empty-hint">Здесь будут отображаться ваши операции</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Модальное окно реферальной программы -->
+            <div id="referral" class="section">
+                <div class="hero-section">
+                    <p class="hero-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M16 17v2H2v-2s0-4 7-4s7 4 7 4m-3.5-9.5A3.5 3.5 0 1 0 9 11a3.5 3.5 0 0 0 3.5-3.5m3.44 5.5A5.32 5.32 0 0 1 18 17v2h4v-2s0-3.63-6.06-4M15 4a3.4 3.4 0 0 0-1.93.59a5 5 0 0 1 0 5.82A3.4 3.4 0 0 0 15 11a3.5 3.5 0 0 0 0-7"/></svg></p>
+                    <h3 class="hero-title">Подарки за приглашения!</h1>
+                    <p class="hero-subtitle">Приглашай друзей и получай бонусы</p>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Реферальная ссылка -->
+                    <div class="referral-link-section">
+                        <div class="referral-link-container">
+                            <input type="text" id="referralLinkModal" readonly class="glass-input">
+                            <div class="referral-link-actions">
+                                <button class="icon-button" onclick="copyReferralLinkModal()" title="Копировать">
+                                    <span class="icon">📋</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Кнопка приглашения -->
+                        <button class="liquid-button invite-button" onclick="shareReferralLinkModal()" style="margin-top: 30px;">
+                            <span class="button-icon">🎉</span>
+                            <span class="button-text">Пригласить друзей</span>
+                        </button>
+                    </div>
+                
+                    <!-- Список рефералов -->
+                    <div class="referrals-list-section">
+                        <div class="section-header">
+                            <h3>Ваши рефералы</h3>
+                            <span class="badge" id="referralsCountBadge">0</span>
+                        </div>
+                        <div class="referrals-list-container">
+                            <div class="referrals-list" id="referralsList">
+                                <div class="empty-referrals">
+                                    <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M16 17v2H2v-2s0-4 7-4s7 4 7 4m-3.5-9.5A3.5 3.5 0 1 0 9 11a3.5 3.5 0 0 0 3.5-3.5m3.44 5.5A5.32 5.32 0 0 1 18 17v2h4v-2s0-3.63-6.06-4M15 4a3.4 3.4 0 0 0-1.93.59a5 5 0 0 1 0 5.82A3.4 3.4 0 0 0 15 11a3.5 3.5 0 0 0 0-7"/></svg></div>
+                                    <p>Пока нет приглашенных друзей</p>
+                                    <p class="empty-hint">Пригласите друзей по ссылке выше</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="market" class="section">
+                <!-- Хедер с балансом как в профиле -->
+                <div class="market-header mark">
+                    <!-- Виджет баланса -->
+                    <div class="balance-widget">
+                        <div class="balance-badge" onclick="openBalanceModal()">
+                            <span class="balance-icon">⭐</span>
+                            <span class="balance-value" id="marketBalance">0</span>
+                            <button class="balance-add-btn">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Заголовок маркета -->
+                    <div class="hero-section mark">
+                        <h3 class="hero-title">NFT Маркет</h3>
+                    </div>
+                </div>
+            
+                <!-- Фильтры (аналогичные профилю) -->
+                <div class="profile-filter-cards">
+                    <div class="profile-filter-card" onclick="openMarketFilterModal('collection')">
+                        <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3 11h8V3H3m2 2h4v4H5m8 12h8v-8h-8m2 2h4v4h-4M3 21h8v-8H3m2 2h4v4H5m8-16v8h8V3m-2 6h-4V5h4Z"/></svg></div>
+                        <div class="profile-filter-card-content">
+                            <h4 class="profile-filter-card-title">Коллекция</h4>
+                            <p class="profile-filter-card-value" id="marketSelectedCollection">Все</p>
+                        </div>
+                        <div class="profile-filter-card-arrow">▼</div>
+                    </div>
+
+                    <div class="profile-filter-card" onclick="openMarketFilterModal('model')">
+                        <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M22 12v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a1 1 0 0 1-1-1V8a2 2 0 0 1 2-2h3.17A3 3 0 0 1 6 5a3 3 0 0 1 3-3c1 0 1.88.5 2.43 1.24v-.01L12 4l.57-.77v.01C13.12 2.5 14 2 15 2a3 3 0 0 1 3 3a3 3 0 0 1-.17 1H21a2 2 0 0 1 2 2v3a1 1 0 0 1-1 1M4 20h7v-8H4zm16 0v-8h-7v8zM9 4a1 1 0 0 0-1 1a1 1 0 0 0 1 1a1 1 0 0 0 1-1a1 1 0 0 0-1-1m6 0a1 1 0 0 0-1 1a1 1 0 0 0 1 1a1 1 0 0 0 1-1a1 1 0 0 0-1-1M3 8v2h8V8zm10 0v2h8V8z"/></svg></div>
+                        <div class="profile-filter-card-content">
+                            <h4 class="profile-filter-card-title">Модель</h4>
+                            <p class="profile-filter-card-value" id="marketSelectedModel">Все</p>
+                        </div>
+                        <div class="profile-filter-card-arrow">▼</div>
+                    </div>
+
+                    <div class="profile-filter-card" onclick="openMarketFilterModal('pattern')">
+                        <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="m9.37 4l1.41 2.5L9.37 9H6.63l-1.4-2.5L6.63 4zm.88-2h-4.5c-.19 0-.36.11-.44.26L3.09 6.22L3 6.5l.09.28l2.22 3.96c.08.15.25.26.44.26h4.5c.19 0 .36-.11.44-.26l2.22-3.96l.09-.28l-.09-.28l-2.22-3.96a.5.5 0 0 0-.44-.26m8.37 7.5L20 12l-1.38 2.5h-2.74L14.5 12l1.38-2.5zm.88-2H15c-.19 0-.36.11-.44.26l-2.22 3.96l-.09.28l.09.28l2.22 3.96c.08.15.25.26.44.26h4.5c.19 0 .36-.11.44-.26l2.22-3.96l.09-.28l-.09-.28l-2.22-3.96a.5.5 0 0 0-.44-.26M9.37 15l1.41 2.5L9.37 20H6.63l-1.4-2.5l1.4-2.5zm.88-2h-4.5c-.19 0-.36.11-.44.26l-2.22 3.96l-.09.28l.09.28l2.22 3.96c.08.15.25.26.44.26h4.5c.19 0 .36-.11.44-.26l2.22-3.96l.09-.28l-.09-.28l-2.22-3.96a.5.5 0 0 0-.44-.26"/></svg></div>
+                        <div class="profile-filter-card-content">
+                            <h4 class="profile-filter-card-title">Узор</h4>
+                            <p class="profile-filter-card-value" id="marketSelectedPattern">Все</p>
+                        </div>
+                        <div class="profile-filter-card-arrow">▼</div>
+                    </div>
+
+                    <div class="profile-filter-card" onclick="openMarketFilterModal('background')">
+                        <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M3.88 3c-.5.06-.88.5-.88 1v1h2V3zM7 3v2h2V3zm4 0v2h2V3zm4 0v2h2V3zm4 0v2h2V3.88c-.06-.5-.5-.88-1-.88zM3 7v2h2V7zm16 0v2h2V7zM3 11v2h2v-2zm16.31 1c-.13 0-.26.05-.36.14l-1.56 1.57l-.96-.96l-.71.71l.71.71l-4.46 4.46V21h2.38l4.45-4.46l.7.71l.72-.71l-.96-.96l1.56-1.55c.18-.2.18-.53 0-.72l-1.17-1.17a.48.48 0 0 0-.34-.14M3 15v2h2v-2zm14 0l.97.97L13.93 20l-.96-.96zM3 19v1.12c.06.5.5.88 1 .88h1v-2zm4 0v2h2v-2z"/></svg></div>
+                        <div class="profile-filter-card-content">
+                            <h4 class="profile-filter-card-title">Фон</h4>
+                            <p class="profile-filter-card-value" id="marketSelectedBackground">Все</p>
+                        </div>
+                        <div class="profile-filter-card-arrow">▼</div>
+                    </div>
+
+                    <div class="profile-filter-card" onclick="openMarketFilterModal('sort')">
+                        <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 9.5L7.5 14h-5zM3 4h4v4H3zm2 16a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2M9 5v2h12V5zm0 14h12v-2H9zm0-6h12v-2H9z"/></svg></div>
+                        <div class="profile-filter-card-content">
+                            <h4 class="profile-filter-card-title">Фильтр</h4>
+                            <p class="profile-filter-card-value" id="marketSelectedSort">Новые</p>
+                        </div>
+                        <div class="profile-filter-card-arrow">▼</div>
+                    </div>
+                </div>
+            
+                <!-- Сетка с NFT на продаже -->
+                <div class="market-grid" id="marketGrid">
+                    <div class="empty-market">
+                        <div class="empty-icon">🛒</div>
+                        <p>Маркет пуст</p>
+                        <p class="empty-hint">Здесь будут отображаться NFT на продаже</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Главная секция -->
+            <div id="home" class="section active">
+                <!-- Хедер с балансом -->
+                <div class="home-header">
+                    <div class="avatar-background"></div>
+
+                    <!-- Виджет баланса -->
+                    <div class="balance-widget">
+                        <div class="balance-badge" onclick="openBalanceModal()">
+                            <span class="balance-icon">⭐</span>
+                            <span class="balance-value" id="homeBalance">0</span>
+                            <button class="balance-add-btn">+</button>
+                        </div>
+                    </div>
+
+                    <!-- БАННЕР вместо hero-section -->
+                    <div class="home-banner-container">
+                        <img src="m_nft_image/base/IMG_2891.PNG" 
+                             alt="Banner" 
+                             class="home-banner"
+                             onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\'banner-fallback\'>🏆 M NFT</div>'">
+                    </div>
+                
+                    <!-- Заголовок "Новые M-NFT" -->
+                    <div class="new-nfts-title-container">
+                        <h2 class="new-nfts-title">Новые M-NFT</h2>
+                    </div>
+
+                    <!-- Два окна фильтров -->
+                    <div class="home-filter-cards">
+                        <div class="profile-filter-card" onclick="selectFilter('rarity')">
+                            <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M18 3a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zM6 5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm5.412 2.4a.632.632 0 0 1 1.176 0l.316.763a5.46 5.46 0 0 0 2.815 2.908l.896.399c.513.228.514.975 0 1.204l-.95.422a5.45 5.45 0 0 0-2.773 2.813l-.308.707a.633.633 0 0 1-1.168 0l-.308-.707a5.45 5.45 0 0 0-2.773-2.813l-.95-.422c-.513-.229-.513-.976 0-1.204l.896-.399a5.46 5.46 0 0 0 2.814-2.908z"/></svg></div>
+                            <div class="profile-filter-card-content">
+                                <h4 class="profile-filter-card-title">Редкость</h4>
+                                <p class="profile-filter-card-value" id="selectedRarity">Любая</p>
+                            </div>
+                            <div class="profile-filter-card-arrow">▼</div>
+                        </div>
+                    
+                        <div class="profile-filter-card" onclick="selectFilter('sort')">
+                            <div class="profile-filter-card-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 9.5L7.5 14h-5zM3 4h4v4H3zm2 16a2 2 0 0 0 2-2a2 2 0 0 0-2-2a2 2 0 0 0-2 2a2 2 0 0 0 2 2M9 5v2h12V5zm0 14h12v-2H9zm0-6h12v-2H9z"/></svg></div>
+                            <div class="profile-filter-card-content">
+                                <h4 class="profile-filter-card-title">Фильтры</h4>
+                                <p class="profile-filter-card-value" id="selectedSort">Все</p>
+                            </div>
+                            <div class="profile-filter-card-arrow">▼</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Сетка подарков -->
+                <div class="gifts-section">
+                    <h3 class="gifts-title">🎁 Доступные подарки</h3>
+                    <div class="market-grid" id="homeGiftsGrid">
+                        <div class="empty-gifts">
+                            <div class="empty-icon">🎁</div>
+                            <p>Подарки не найдены</p>
+                            <p class="empty-hint">Здесь будут отображаться доступные M-NFT</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Rating Section -->
+            <div id="rating" class="section">
+                <div class="hero-section" style="padding-top: 30px;">
+                    <h1 class="hero-title">🏆 Топ коллекционеров</h1>
+                    <p class="hero-subtitle">Лучшие по количеству NFT</p>
+                </div>
+    
+                <!-- Подиум топ-3 -->
+                <div class="rating-podium" id="ratingPodium">
+                    <!-- Заполняется через JS -->
+                </div>
+    
+                <!-- Список остальных -->
+                <div class="rating-list" id="ratingList">
+                    <!-- Заполняется через JS -->
+                </div>
+            </div>
+            <!-- Модальное окно баланса -->
+            <div id="balanceModal" class="balance-modal">
+                <div class="balance-modal-content">
+                    <!-- Заголовок -->
+                    <div class="balance-header">
+                        <h3 class="balance-title">Баланс</h3>
+                    </div>
+
+                    <!-- Основной контент -->
+                    <div class="balance-body">
+                        <!-- Валюта и иконка -->
+                        <div class="balance-currency">
+                            <span class="currency-icon">⭐</span>
+                            <span class="currency-name">Звезды</span>
+                        </div>
+
+                        <!-- Сумма баланса -->
+                        <div class="balance-amount-display">
+                            <div class="balance-number" id="balanceAmount">0</div>
+                            <div class="balance-text" id="balanceText">на вашем счету</div>
+                        </div>
+
+                        <!-- Кнопки действий -->
+                        <div class="balance-actions-minimal">
+                            <button class="action-btn minimal-btn withdraw-btn" onclick="withdrawFunds()">
+                                <span class="btn-icon">-</span>
+                                <span class="btn-text">Вывести</span>
+                            </button>
+                            <button class="action-btn minimal-btn deposit-btn" onclick="depositFunds()">
+                                <span class="btn-icon">+</span>
+                                <span class="btn-text">Пополнить</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Кнопка назад внизу -->
+                    <div class="balance-footer">
+                        <button class="back-btn-bottom" onclick="closeBalanceModal()">
+                            <span class="back-arrow">←</span>
+                            <span>Назад</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div id="history" class="section">
+                <div class="hero-section">
+                    <h1 class="hero-title">Все продажи NFT</h1>
+                    <p class="hero-subtitle">Глобальная история торговли</p>
+                </div>
+            
+                <div id="historyList">
+                    <!-- История продаж будет загружена здесь -->
+                    <div class="empty-history">
+                        <div class="empty-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8s-8 3.6-8 8s3.6 8 8 8m0-18c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12S6.5 2 12 2m5 11.9l-.7 1.3l-5.3-2.9V7h1.5v4.4z"/></svg></div>
+                        <p>История продаж</p>
+                        <p class="empty-hint">Загрузка данных...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Filter Modals -->
+        <div id="filterModal" class="filter-modal">
+            <div class="filter-modal-content">
+                <div class="filter-modal-header">
+                    <h3 id="filterModalTitle">Фильтры</h3>
+                    <button class="filter-modal-close" onclick="closeFilterModal()">✕</button>
+                </div>
+                <div class="filter-modal-body" id="filterModalBody">
+                    <!-- Filter content will be loaded here -->
+                </div>
+                <div class="filter-modal-footer">
+                    <button class="filter-modal-clear" onclick="clearFilters()">Очистить</button>
+                    <button class="filter-modal-apply" onclick="applyFilters()">Применить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="showSection('home')">
+                <div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="m12 5.69l5 4.5V18h-2v-6H9v6H7v-7.81zM12 3L2 12h3v8h6v-6h2v6h6v-8h3"/></svg></div>
+                <span>Главная</span>
+            </div>
+            <div class="nav-item" onclick="showSection('rating')">
+                <div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+                <span>Рейтинг</span>
+            </div>
+            <div class="nav-item" onclick="showSection('market')">
+                <div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5.06 3c-.43 0-.84.14-1.22.42s-.6.64-.7 1.08L2.11 8.91c-.25 1.09-.05 2.04.61 2.86l.28.28V19c0 .5.2 1 .61 1.39S4.5 21 5 21h14c.5 0 1-.2 1.39-.61S21 19.5 21 19v-6.95l.28-.28c.66-.82.86-1.77.61-2.86L20.86 4.5c-.13-.44-.36-.8-.73-1.08A1.88 1.88 0 0 0 18.94 3zm13.83 1.97l1.08 4.41c.09.43 0 .82-.28 1.17c-.25.31-.56.45-.94.45c-.31 0-.58-.1-.8-.34c-.22-.23-.34-.5-.37-.82L16.97 5zM5.06 5h1.97l-.61 4.84C6.3 10.63 5.91 11 5.25 11c-.41 0-.72-.14-.94-.45c-.28-.35-.37-.74-.28-1.17zm3.99 0H11v4.7c0 .35-.11.65-.36.92c-.25.26-.56.38-.94.38c-.34 0-.63-.12-.86-.41S8.5 10 8.5 9.66V9.5zM13 5h1.95l.55 4.5c.08.42 0 .77-.29 1.07c-.26.3-.6.43-1.01.43c-.31 0-.59-.12-.84-.38A1.3 1.3 0 0 1 13 9.7zm-5.55 7.05c.63.62 1.41.95 2.35.95c.84 0 1.58-.33 2.2-.95c.69.62 1.45.95 2.3.95c.87 0 1.62-.33 2.25-.95c.56.62 1.31.95 2.25.95h.23v6H5v-6h.25c.91 0 1.64-.33 2.2-.95"/></svg></div>
+                <span>Маркет</span>
+            </div>
+            <div class="nav-item" onclick="showSection('profile')">
+                <div class="nav-icon">
+                    <svg width="22" height="22" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.5001 13.6232C14.8537 13.6232 16.7617 11.7151 16.7617 9.36151C16.7617 7.00784 14.8537 5.09983 12.5001 5.09983C10.1464 5.09983 8.23838 7.00784 8.23838 9.36151C8.23838 11.7151 10.1464 13.6232 12.5001 13.6232ZM14.5111 9.36151C14.5111 10.4722 13.6108 11.3726 12.5001 11.3726C11.3894 11.3726 10.489 10.4722 10.489 9.36151C10.489 8.25083 11.3894 7.35046 12.5001 7.35046C13.6108 7.35046 14.5111 8.25083 14.5111 9.36151Z" fill="currentColor" stroke="currentColor" stroke-width="0.159722"></path>
+                        <path d="M12.5 0.920139C6.10462 0.920139 0.920139 6.10462 0.920139 12.5C0.920139 18.8953 6.10462 24.0799 12.5 24.0799C18.8953 24.0799 24.0799 18.8953 24.0799 12.5C24.0799 6.10462 18.8953 0.920139 12.5 0.920139ZM12.5674 14.511C9.52787 14.511 6.82211 15.9403 5.08557 18.163C3.88438 16.5927 3.17077 14.6298 3.17077 12.5C3.17077 7.34761 7.34761 3.17077 12.5 3.17077C17.6524 3.17077 21.8292 7.34761 21.8292 12.5C21.8292 14.5906 21.1416 16.5204 19.9803 18.0758C18.2416 15.903 15.567 14.511 12.5674 14.511ZM12.5 21.8292C10.2979 21.8292 8.27416 21.0663 6.67838 19.7904C7.99167 17.9565 10.14 16.7617 12.5674 16.7617C14.9643 16.7617 17.0891 17.9267 18.4066 19.7217C16.798 21.0389 14.7414 21.8292 12.5 21.8292Z" fill="currentColor" stroke="currentColor" stroke-width="0.159722"></path>
+                    </svg>
+                </div>
+                <span>Профиль</span>
+            </div>
+            <div class="nav-item" onclick="showSection('history')">
+                <div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M12 20c4.4 0 8-3.6 8-8s-3.6-8-8-8s-8 3.6-8 8s3.6 8 8 8m0-18c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12S6.5 2 12 2m5 11.9l-.7 1.3l-5.3-2.9V7h1.5v4.4z"/></svg></div>
+                <span>История</span>
+            </div>
+        </nav>
+    </div>
+    <script src="js/config.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="js/socket-client.js"></script>
+    <script src="js/ton-connect.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/referral.js"></script> 
+    <script src="js/payments.js"></script>
+    <script src="js/profile-history.js"></script>
+    <script src="js/inventory.js"></script>
+    <script src="js/history-nft-display.js"></script>
+    <script src="js/nft-modal.js"></script>
+    <script src="js/market.js"></script>
+    <script src="js/global-history.js"></script>
+    <script src="js/home.js"></script>
+    <script src="js/purchase-manager.js"></script>
+    <script src="js/upgrade.js"></script>
+    <script src="js/rating.js"></script>
+    <script src="js/level-modal.js"></script>
+</body>
+</html>

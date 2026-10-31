@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" version="1.1" id="Comp_14" sodipodi:docname="Comp 14" inkscape:export-xdpi="96" inkscape:export-ydpi="96" style="fill: none; stroke: none">
+   <defs/>
+   <sodipodi:namedview inkscape:pagecheckerboard="true" borderlayer="true" bordercolor="#666666" pagecolor="#ffffff"/>
+   <g inkscape:groupmode="layer" id="Слой_2" inkscape:label="Слой 2" transform="matrix(1.0, 0.0, 0.0, 1.0, 254.989, 256.403)" style="">
+      <g id="g_1" inkscape:label="Слой 2" transform="matrix(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)" style="fill-opacity:1.0;fill:rgb(0, 0, 0);fill-rule:nonzero">
+         <g id="g_2" inkscape:label="Слой 2" transform="matrix(1.0, 0.0, 0.0, 1.0, 5.455, 85.936)" style="">
+            <path d="M 100.281,-35.675 C 103.304,-58.959999999999994 -18.87,-79.33099999999999 -46.853,-86.026 C -71.837,-92.48899999999999 -73.388,-64.316 -79.754,-47.182 C -87.36500000000001,-23.384000000000004 -93.11699999999999,0.9160000000000004 -99.151,25.136 C -101.69,35.327 -100.554,37.348 -91.746,40.56 C -42.812999999999995,55.328 6.248999999999995,69.7 54.897,85.402 C 69.758,92.205 72.979,75.34599999999999 76.544,64.585 C 84.152,36.26299999999999 95.10900000000001,-7.774999999999999 100.281,-35.675 Z" id="Path_1" inkscape:label="Path 1" style=""/>
+         </g>
+         <g id="g_3" inkscape:label="Слой 2" transform="matrix(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)" style="">
+            <path d="M 249.645,137.153 C 258.661,211.041 175.692,244.267 113.722,226.411 C 22.522999999999996,202.135 -67.527,173.988 -157.323,144.941 C -235.839,125.778 -286.111,35.653 -219.078,-24.601 C -137.062,-98.322 -10.668999999999997,-194.21300000000002 58.815,-221.211 C 116.72,-243.71 169.729,-231.06599999999997 191.806,-151.51 C 209.81300000000002,-86.61899999999999 233.61200000000002,5.7620000000000005 249.645,137.153 Z" id="path_4" inkscape:label="Path 1" style=""/>
+         </g>
+      </g>
+   </g>
+</svg>
