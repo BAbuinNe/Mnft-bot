@@ -6,7 +6,7 @@ async function initTonConnect() {
     try {
         // Инициализируем TON Connect UI в скрытом контейнере
         tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://stars-marketplace.vercel.app/tonconnect-manifest.json',
+            manifestUrl: 'https://babuinne.github.io/Mnft-bot/tonconnect-manifest.json',
             buttonRootId: 'tonconnect-ui', // Используем скрытый контейнер
             actionsConfiguration: { twaReturnUrl: 'https://t.me/FternStarsBot/app' }
         });
