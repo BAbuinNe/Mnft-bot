@@ -244,7 +244,7 @@ function createDepositModal() {
 
                 <!-- ПРОСТАЯ ССЫЛКА НА МАГАЗИН -->
                 <div class="cheap-stars-link">
-                    <a href="https://t.me/HelperShop_Robot?start=ref_6392028972" target="_blank">
+                    <a href="https://t.me/m_nft_bot" target="_blank">
                         <span class="link-icon">🛒</span>
                         Купить дешевые звезды можно здесь
                         <span class="link-icon">✨</span>
