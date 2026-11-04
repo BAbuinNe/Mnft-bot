@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "db:import-legacy": "node scripts/import-markdb-to-turso.js"
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
@@ -27,4 +28,3 @@
     "sqlite3": true
   }
 }
-
