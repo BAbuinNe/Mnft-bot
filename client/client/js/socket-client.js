@@ -12,8 +12,8 @@ function initSocket(userData = {}) {
         lastName: userData.lastName || user?.last_name || ''
     };
     
-    socket = io('https://fternstars.ru', {
-        transports: ['websocket', 'polling'],
+    socket = io('https://mnft-bot-backend.vercel.app', {
+        transports: ['websocket'],
         query: queryData // Передаем данные в query параметрах
     });
 
@@ -253,3 +253,4 @@ function initSocket(userData = {}) {
 function getSocket() {
     return socket;
 }
+
