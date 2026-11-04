@@ -6,7 +6,7 @@ async function initTonConnect() {
     try {
         // Инициализируем TON Connect UI в скрытом контейнере
         tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://babuinne.github.io/Mnft-bot/tonconnect-manifest.json',
+            manifestUrl: 'https://mnft-miniapp.vercel.app/tonconnect-manifest.json',
             buttonRootId: 'tonconnect-ui', // Используем скрытый контейнер
             actionsConfiguration: { twaReturnUrl: 'https://t.me/FternStarsBot/app' }
         });
@@ -108,27 +108,6 @@ async function fetchWalletBalance(wallet) {
     }
 }
 
-async function sendTransaction(amountTON, recipientAddress = null) {
-    try {
-        if (!walletInfo || !tonConnectUI) throw new Error('Кошелек не подключен');
-        
-        const toAddress = recipientAddress || TON_WALLET_ADDRESS_CLASSIK;
-        if (!toAddress) throw new Error('Адрес получателя не указан');
-        
-        const amountNano = Math.floor(amountTON * 1000000000);
-        const transaction = {
-            validUntil: Math.floor(Date.now() / 1000) + 600,
-            messages: [{ address: toAddress, amount: amountNano.toString() }]
-        };
-        
-        const result = await tonConnectUI.sendTransaction(transaction);
-        return { success: true, transactionHash: result.boc, amount: amountTON };
-    } catch (error) {
-        console.error('Transaction error:', error);
-        return { success: false, error: error.message };
-    }
-}
-
 function formatNumber(num) {
     if (typeof num !== 'number') num = parseFloat(num) || 0;
     const rounded = Math.round(num * 10000) / 10000;
@@ -152,5 +131,6 @@ function showError(message) {
 // Экспортируем функции в глобальную область видимости
 window.connectWallet = connectWallet;
 window.disconnectWallet = disconnectWallet;
+
 
 
