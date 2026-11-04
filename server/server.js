@@ -11,15 +11,9 @@ const redis = require('redis');
 const { createAdapter } = require('@socket.io/redis-adapter');
 const cors = require('cors');
 import cron from 'node-cron';
-import path from 'path'; 
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url); 
-const __dirname = path.dirname(__filename); 
-
+import { timingSafeEqual } from 'node:crypto';
 // Импорт модулей
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
+import { openDatabase } from './database.js';
 import { SocketModule } from './modules/socket/socket.module.js';
 import { NFTService } from './modules/nft/nft.service.js';
 import { WebhookSetup } from './modules/telegram/webhook.setup.js';
@@ -28,17 +22,15 @@ import { TelegramCacheService } from './telegram-cache.service.js';
 
 const app = express();
 const server = createServer(app);
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
+const publicAppUrl = process.env.VERCEL
+    ? 'https://mnft-bot-backend.vercel.app'
+    : process.env.APP_URL;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Статические файлы
-app.use(express.static('../client'));
-app.use('/avatars', express.static(path.join(__dirname, '../client/avatars')));
-app.use('/m_nft_image', express.static(path.join(__dirname, '../client/m_nft_image')));
 
 // Redis клиенты
 const pubClient = redis.createClient({ 
@@ -54,10 +46,7 @@ const io = new Server(server, {
   }
 });
 
-const db = await open({
-    filename: '../db/mark.db',
-    driver: sqlite3.Database
-});
+const db = await openDatabase();
 
 let socketModuleInstance = null;
 let telegramClient = null;
@@ -65,21 +54,26 @@ let telegramCache = null;
 
 async function initializeTelegramClient() {
     try {
+        // Vercel functions cannot perform Telegram's interactive phone/code login.
+        // Bot API features can run without MTProto; enable it only with an injected session.
+        if (process.env.VERCEL && !process.env.TELEGRAM_SESSION_STRING) {
+            console.log('ℹ️ MTProto client disabled: TELEGRAM_SESSION_STRING is not configured');
+            return null;
+        }
+
         const apiId = process.env.TELEGRAM_API_ID;
         const apiHash = process.env.TELEGRAM_API_HASH;
         
         if (!apiId || !apiHash) {
-            console.error('❌ TELEGRAM_API_ID и TELEGRAM_API_HASH должны быть указаны в .env');
-            console.log('Получите их на https://my.telegram.org/apps');
-            process.exit(1);
+            throw new Error('TELEGRAM_API_ID and TELEGRAM_API_HASH are required for MTProto');
         }
 
         console.log('🤖 Инициализация Telegram клиента...');
         telegramClient = new TelegramClientService(apiId, apiHash);
         await telegramClient.init();
         
-        // ИНИЦИАЛИЗИРУЕМ КЭШ СЕРВИС С ПЕРЕДАЧЕЙ db
-        telegramCache = new TelegramCacheService(telegramClient, db); 
+        // Initialize the user cache only when MTProto is available.
+        telegramCache = new TelegramCacheService(telegramClient, db);
         
         // Делаем клиент и кэш доступными глобально
         global.telegramClient = telegramClient;
@@ -88,11 +82,12 @@ async function initializeTelegramClient() {
         return telegramClient;
     } catch (error) {
         console.error('❌ Ошибка инициализации Telegram клиента:', error);
-        process.exit(1);
+        throw error;
     }
 }
 
 async function setupDailyCacheRefresh() {
+    if (process.env.VERCEL) return;
     try {
         cron.schedule('43 12 * * *', async () => {
             console.log('🔄 Запуск ежедневного обновления кэша пользователей...');
@@ -131,31 +126,30 @@ async function initializeModules() {
     const socketModule = new SocketModule(io, pubClient, db);
     socketModuleInstance = socketModule;
     
-    await setupTelegramWebhook();
+    // The webhook is configured once on the production alias. Do not reset it
+    // on every Vercel serverless cold start.
+    if (!process.env.VERCEL) await setupTelegramWebhook();
     await setupDailyCacheRefresh();
     console.log('✅ All modules initialized successfully');
   } catch (error) {
     console.error('❌ Module initialization failed:', error);
-    process.exit(1);
+    throw error;
   }
 }
 
 async function setupTelegramWebhook() {
     try {
-        const webhookUrl = `${process.env.APP_URL}/webhook/telegram`;
-        
-        const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/setWebhook`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                url: webhookUrl,
-                drop_pending_updates: true,
-                allowed_updates: ['pre_checkout_query', 'message']
-            })
-        });
-        
-        const data = await response.json();
-        console.log(data.ok ? '✅ Webhook установлен' : '❌ Webhook error:', data);
+        const webhookUrl = `${publicAppUrl}/webhook/telegram`;
+        if (process.env.VERCEL && !process.env.TELEGRAM_WEBHOOK_SECRET) {
+            throw new Error('TELEGRAM_WEBHOOK_SECRET is required on Vercel');
+        }
+        const webhookSetup = new WebhookSetup(
+            process.env.TELEGRAM_BOT_TOKEN,
+            webhookUrl,
+            process.env.TELEGRAM_WEBHOOK_SECRET
+        );
+        const result = await webhookSetup.setupWebhook();
+        console.log(result ? '✅ Webhook установлен' : '❌ Webhook error');
     } catch (error) {
         console.error('Webhook setup error:', error);
     }
@@ -167,7 +161,8 @@ app.get('/health', (req, res) => {
     status: 'ok', 
     modules: ['currency'],
     connections: io.engine.clientsCount,
-    telegramClient: !!telegramClient
+    telegramClient: !!telegramClient,
+    storage: process.env.TURSO_DATABASE_URL ? 'persistent' : 'temporary-memory'
   });
 });
 
@@ -187,59 +182,59 @@ app.get('/api/collections', async (req, res) => {
 });
 
 app.post('/webhook/telegram', async (req, res) => {
+    const configuredSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    const receivedSecret = req.get('x-telegram-bot-api-secret-token') || '';
+    const expected = Buffer.from(configuredSecret || '');
+    const received = Buffer.from(receivedSecret);
+    if (configuredSecret && (expected.length !== received.length || !timingSafeEqual(expected, received))) {
+        return res.status(401).json({ ok: false });
+    }
+    if (process.env.VERCEL && !configuredSecret) {
+        return res.status(503).json({ ok: false });
+    }
+
+    // Telegram can execute a Bot API method directly from the webhook response.
+    // Use that for /start so the welcome reply does not depend on Vercel's
+    // outbound connection to api.telegram.org.
+    const messageText = req.body?.message?.text?.trim() || '';
+    const command = messageText.split(/\s+/, 1)[0] || '';
+    const message = req.body?.message;
+    if (/^\/start(?:@\w+)?$/i.test(command) && message?.chat?.id) {
+        console.log('📨 /start reply returned to Telegram as a webhook method');
+        return res.status(200).json({
+            method: 'sendMessage',
+            chat_id: message.chat.id,
+            text: '👋 Добро пожаловать в M-NFT Маркет!\n\nЗдесь вы можете покупать, продавать и коллекционировать уникальные NFT.\n\nНажмите кнопку ниже, чтобы открыть маркет:',
+            reply_markup: {
+                inline_keyboard: [[{
+                    text: '🚀 Открыть Маркет NFT',
+                    web_app: { url: 'https://mnft-miniapp.vercel.app/' }
+                }], [{
+                    text: '📢 Channel',
+                    url: 'https://t.me/mnft_channel'
+                }]]
+            },
+            parse_mode: 'HTML'
+        });
+    }
+
     try {
-        const message = req.body?.message;
-        const messageText = message?.text?.trim() || '';
-        const command = messageText.split(/\s+/, 1)[0] || '';
-
-        if (/^\/start(?:@\w+)?$/i.test(command) && message?.chat?.id) {
-            return res.status(200).json({
-                method: 'sendMessage',
-                chat_id: message.chat.id,
-                text: '👋 Добро пожаловать в M-NFT Маркет!\n\nЗдесь вы можете покупать, продавать и коллекционировать уникальные NFT.\n\nВыберите действие:',
-                reply_markup: {
-                    inline_keyboard: [[{
-                        text: '🚀 Открыть Маркет NFT',
-                        web_app: { url: 'https://mnft-miniapp.vercel.app/' }
-                    }], [{
-                        text: '📢 Channel',
-                        url: 'https://t.me/mnft_channel'
-                    }]]
-                }
-            });
-        }
-
         console.log('📱 Telegram webhook received');
+        
+        // ВАЖНО: Немедленно отвечаем Telegram
         res.status(200).json({ ok: true });
+        
+        // Обрабатываем вебхук асинхронно
         if (socketModuleInstance && socketModuleInstance.handleTelegramWebhook) {
-            socketModuleInstance.handleTelegramWebhook(req.body);
+            const handleWebhook = () => socketModuleInstance.handleTelegramWebhook(req.body);
+            if (db.withContext) await db.withContext(handleWebhook);
+            else await handleWebhook();
         } else {
             console.error('❌ SocketModule not initialized or missing handleTelegramWebhook method');
         }
+        
     } catch (error) {
         console.error('Webhook error:', error);
-        if (!res.headersSent) res.status(500).json({ ok: false });
-    }
-});
-
-// Эндпоинт для ручной установки вебхука
-app.post('/setup-webhook', async (req, res) => {
-    try {
-        const webhookSetup = new WebhookSetup(
-            process.env.TELEGRAM_BOT_TOKEN,
-            `${process.env.APP_URL}/webhook/telegram`
-        );
-        
-        const result = await webhookSetup.setupWebhook();
-        
-        res.json({ 
-            success: result, 
-            message: result ? 'Webhook установлен' : 'Ошибка установки webhook' 
-        });
-        
-    } catch (error) {
-        console.error('Setup webhook error:', error);
-        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -278,13 +273,22 @@ process.on('SIGTERM', async () => {
   
   await pubClient.quit();
   await subClient.quit();
+  await db.close?.();
   server.close(() => {
     process.exit(0);
   });
 });
 
-// Запуск сервера
-server.listen(port, () => {
-  console.log(`🚀 Server running on port ${port}`);
-  initializeModules();
-});
+// Vercel serves the exported HTTP server as a Function. Local development
+// keeps the traditional listener and initializes integrations after binding.
+if (process.env.VERCEL) {
+  await initializeModules();
+} else {
+  server.listen(port, () => {
+    console.log(`🚀 Server running on port ${port}`);
+    initializeModules().catch((error) => console.error('Initialization failed:', error));
+  });
+}
+
+export default server;
+
