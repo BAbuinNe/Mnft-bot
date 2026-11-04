@@ -188,20 +188,37 @@ app.get('/api/collections', async (req, res) => {
 
 app.post('/webhook/telegram', async (req, res) => {
     try {
+        const message = req.body?.message;
+        const messageText = message?.text?.trim() || '';
+        const command = messageText.split(/\s+/, 1)[0] || '';
+
+        if (/^\/start(?:@\w+)?$/i.test(command) && message?.chat?.id) {
+            return res.status(200).json({
+                method: 'sendMessage',
+                chat_id: message.chat.id,
+                text: '👋 Добро пожаловать в M-NFT Маркет!\n\nЗдесь вы можете покупать, продавать и коллекционировать уникальные NFT.\n\nВыберите действие:',
+                reply_markup: {
+                    inline_keyboard: [[{
+                        text: '🚀 Открыть Маркет NFT',
+                        web_app: { url: 'https://mnft-miniapp.vercel.app/' }
+                    }], [{
+                        text: '📢 Channel',
+                        url: 'https://t.me/mnft_channel'
+                    }]]
+                }
+            });
+        }
+
         console.log('📱 Telegram webhook received');
-        
-        // ВАЖНО: Немедленно отвечаем Telegram
         res.status(200).json({ ok: true });
-        
-        // Обрабатываем вебхук асинхронно
         if (socketModuleInstance && socketModuleInstance.handleTelegramWebhook) {
             socketModuleInstance.handleTelegramWebhook(req.body);
         } else {
             console.error('❌ SocketModule not initialized or missing handleTelegramWebhook method');
         }
-        
     } catch (error) {
         console.error('Webhook error:', error);
+        if (!res.headersSent) res.status(500).json({ ok: false });
     }
 });
 
