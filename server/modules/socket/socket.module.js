@@ -26,7 +26,9 @@ export class SocketModule {
         this.userService = new UserService(db);
         
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
-        console.log(`🤖 TelegramService токен: ${botToken.substring(0, 10)}...`);
+        if (!botToken) {
+            throw new Error('TELEGRAM_BOT_TOKEN is required');
+        }
         
         this.telegramService = new TelegramService(botToken);
         
@@ -35,11 +37,18 @@ export class SocketModule {
         
         console.log('⭐ Socket module started');
         this.currencyService.startPriceUpdates();
-        this.setupContactAdding();
     }
 
     setupSocketHandlers() {
         this.io.on('connection', (socket) => {
+            const registerHandler = socket.on.bind(socket);
+            socket.on = (eventName, handler) => registerHandler(
+                eventName,
+                (...args) => this.db.withContext
+                    ? this.db.withContext(() => handler(...args))
+                    : handler(...args)
+            );
+
             console.log(`[SocketModule] 🔌 Client connected: ${socket.id}`);
             // ========== ОБРАБОТЧИК РЕГИСТРАЦИИ ПОЛЬЗОВАТЕЛЯ ==========
             socket.on('register_user', async (data) => {
@@ -179,143 +188,8 @@ export class SocketModule {
                 }
             });
             
-            socket.on('transfer_nft', async (data) => {
-                try {
-                    const { nftId, fromUserId, toUserId } = data;
-
-                    // ПРОВЕРЯЕМ БАЛАНС (5 ЗВЕЗД)
-                    const userBalance = await this.db.get(
-                        'SELECT stars_balance FROM users WHERE id = ?',
-                        [fromUserId]
-                    );
-
-                    if (!userBalance || userBalance.stars_balance < 5) {
-                        socket.emit('nft_transfer_result', {
-                            success: false,
-                            error: 'Недостаточно звезд. Нужно 5 ⭐ для передачи'
-                        });
-                        return;
-                    }
-
-                    const nftCheck = await this.db.get(
-                        'SELECT * FROM m_nfts WHERE id = ? AND owner_id = ?',
-                        [nftId, fromUserId]
-                    );
-
-                    if (!nftCheck) {
-                        socket.emit('nft_transfer_result', {
-                            success: false,
-                            error: 'NFT не найден или вы не владеете им'
-                        });
-                        return;
-                    }
-
-                    const receiverCheck = await this.db.get(
-                        'SELECT id FROM users WHERE id = ?',
-                        [toUserId]
-                    );
-
-                    if (!receiverCheck) {
-                        socket.emit('nft_transfer_result', {
-                            success: false,
-                            error: 'Получатель не найден'
-                        });
-                        return;
-                    }
-                
-                    // Получаем информацию о NFT
-                    const nftInfo = await this.db.get(`
-                        SELECT mn.*, mnc.name as collection_name, mnc.image_file_id
-                        FROM m_nfts mn
-                        LEFT JOIN m_nft_collections mnc ON mn.collection_id = mnc.id
-                        WHERE mn.id = ?
-                    `, [nftId]);
-                    
-                    const nftFullName = `${nftInfo?.collection_name || 'NFT'} #${nftInfo?.number || '?'}`;
-                    
-                    await this.db.run('BEGIN TRANSACTION');
-                    
-                    try {
-                        await this.db.run(
-                            'UPDATE users SET stars_balance = stars_balance - 5 WHERE id = ?',
-                            [fromUserId]
-                        );
-
-                        await this.db.run(
-                            'UPDATE m_nfts SET owner_id = ?, pinned = NULL, dressed = NULL WHERE id = ?',
-                            [toUserId, nftId]
-                        );
-
-                        await this.nftService.logNFTTransfer(
-                            nftId,     
-                            fromUserId,
-                            toUserId,  
-                            'transfer',
-                            5          
-                        );
-
-                        await this.db.run('COMMIT');
-
-                        const newBalance = await this.db.get(
-                            'SELECT stars_balance FROM users WHERE id = ?',
-                            [fromUserId]
-                        );
-
-                        socket.emit('nft_transfer_result', {
-                            success: true,
-                            message: 'NFT успешно передан',
-                            newBalance: newBalance.stars_balance 
-                        });
-
-                        socket.emit('inventory_updated', {
-                            userId: fromUserId,
-                            timestamp: new Date().toISOString()
-                        });
-
-                        socket.emit('balance_updated', {
-                            userId: fromUserId,
-                            newBalance: newBalance.stars_balance,
-                            timestamp: new Date().toISOString()
-                        });
-                    
-                        // ========== ОТПРАВКА УВЕДОМЛЕНИЙ ==========
-
-                        // Сообщение отправителю (используем ID, так как имени нет)
-                        const senderMessage = `
-<b>📤 NFT передан!</b>
-        
-Вы передали NFT <b>${nftFullName}</b>
-пользователю с ID: <code>${toUserId}</code>
-        
-💸 Комиссия за передачу: 5 ⭐
-                        `;
-
-                        await this.telegramService.sendMessage(fromUserId, senderMessage);
-                    
-                        // Сообщение получателю
-                        const receiverMessage = `
-<b>📥 Вы получили NFT!</b>
-        
-Пользователь с ID: <code>${fromUserId}</code>
-передал вам NFT <b>${nftFullName}</b>
-        
-🎉 Поздравляем с пополнением коллекции!
-                        `;
-
-                        await this.telegramService.sendMessage(toUserId, receiverMessage);
-
-                    } catch (error) {
-                        await this.db.run('ROLLBACK');
-                        throw error;
-                    }
-
-                } catch (error) {
-                    console.error('❌ NFT transfer error:', error);
-                    socket.emit('nft_transfer_result', {
-                        success: false,
-                        error: error.message
-                    });
-                }
+            socket.on('transfer_nft', () => {
+                socket.emit('feature_disabled', { feature: 'transactions' });
             });
 
             // ОБРАБОТЧИК ДЛЯ ПОИСКА ПОЛЬЗОВАТЕЛЕЙ
@@ -340,84 +214,13 @@ export class SocketModule {
             });
 
             // ========== ОБРАБОТЧИК ПОПОЛНЕНИЯ БАЛАНСА ==========
-            socket.on('deposit_stars', async (data) => {
-                try {
-                    const { userId, amount } = data;
-
-                    const transactionId = await this.userService.logTransaction(
-                        userId, 
-                        'deposit', 
-                        amount, 
-                        'pending',
-                        `Пополнение баланса через мини-приложение`
-                    );
-
-                    const success = await this.userService.updateBalance(userId, amount);
-
-                    if (success) {
-                        const newBalance = await this.userService.getBalance(userId);
-
-                        if (transactionId) {
-                            await this.userService.updateTransactionStatus(transactionId, 'completed');
-                        }
-
-                        socket.emit('deposit_result', {
-                            success: true,
-                            amount: amount,
-                            newBalance: newBalance,
-                            transactionId: transactionId,
-                            message: `Баланс пополнен на ${amount} ⭐`
-                        });
-
-                        socket.emit('balance_updated', {
-                            userId: userId,
-                            newBalance: newBalance,
-                            timestamp: new Date().toISOString()
-                        });
-                    } else {
-                        if (transactionId) {
-                            await this.userService.updateTransactionStatus(transactionId, 'failed');
-                        }
-
-                        socket.emit('deposit_result', {
-                            success: false,
-                            error: 'Ошибка при обновлении баланса'
-                        });
-                    }
-
-                } catch (error) {
-                    console.error('❌ Deposit error:', error);
-                    socket.emit('deposit_result', {
-                        success: false,
-                        error: 'Внутренняя ошибка сервера'
-                    });
-                }
+            socket.on('deposit_stars', () => {
+                socket.emit('feature_disabled', { feature: 'transactions' });
             });
             
             // ========== ОБРАБОТЧИК СОЗДАНИЯ ПЛАТЕЖНОГО ИНВОЙСА ==========
-            socket.on('create_payment_invoice', async (data) => {
-                try {
-                    const { userId, amount } = data;
-                    
-                    const invoiceUrl = await this.telegramService.createInvoiceLink(
-                        userId, 
-                        amount,
-                        `Пополнение баланса на ${amount} звезд`
-                    );
-                    
-                    socket.emit('payment_invoice_created', {
-                        success: true,
-                        invoiceUrl: invoiceUrl,
-                        amount: amount
-                    });
-                    
-                } catch (error) {
-                    console.error('❌ Error creating invoice:', error);
-                    socket.emit('payment_invoice_created', {
-                        success: false,
-                        error: 'Ошибка при создании платежа'
-                    });
-                }
+            socket.on('create_payment_invoice', () => {
+                socket.emit('feature_disabled', { feature: 'transactions' });
             });
 
             socket.on('get_transaction_history', async (data) => {
@@ -788,209 +591,8 @@ export class SocketModule {
                 }
             });
 
-            socket.on('buy_nft', async (data) => {
-                try {
-                    const { nftId, userId, price } = data;
-                
-                    // 1. Проверяем баланс пользователя
-                    const userBalance = await this.db.get(
-                        'SELECT stars_balance FROM users WHERE id = ?',
-                        [userId]
-                    );
-                
-                    if (!userBalance || userBalance.stars_balance < price) {
-                        socket.emit('buy_nft_result', {
-                            success: false,
-                            error: `Недостаточно средств. Нужно ${price} ⭐, у вас ${userBalance?.stars_balance || 0} ⭐`
-                        });
-                        return;
-                    }
-                
-                    // 2. Проверяем, что NFT еще на продаже и получаем полную информацию
-                    const listing = await this.db.get(`
-                        SELECT ms.*, mn.*, mnc.name as collection_name, mnc.image_file_id
-                        FROM m_nfts_on_sale ms 
-                        JOIN m_nfts mn ON ms.nft_id = mn.id 
-                        LEFT JOIN m_nft_collections mnc ON mn.collection_id = mnc.id 
-                        WHERE ms.nft_id = ?`,
-                        [nftId]
-                    );
-                
-                    if (!listing) {
-                        socket.emit('buy_nft_result', {
-                            success: false,
-                            error: 'NFT больше не доступен для покупки'
-                        });
-                        return;
-                    }
-                
-                    const nftFullName = `${listing.collection_name || 'NFT'} #${listing.number || '?'}`;
-                
-                    // 3. Начинаем транзакцию
-                    await this.db.run('BEGIN TRANSACTION');
-                
-                    try {
-                        // 4. Списываем звезды у покупателя
-                        await this.db.run(
-                            'UPDATE users SET stars_balance = stars_balance - ? WHERE id = ?',
-                            [price, userId]
-                        );
-                    
-                        // 5. ОБНОВЛЯЕМ СПЕНТ покупателя
-                        await this.userService.updateSpent(userId, price);
-                        const updatedUserData = await this.userService.getUserStats(userId);
-
-                        if (updatedUserData) {
-                            // === НОВОЕ: Получаем лимиты для обновленного уровня ===
-                            const currentLimits = await this.getLevelLimits(updatedUserData.level || 1);
-                            const nextLimits = await this.getLevelLimits((updatedUserData.level || 1) + 1);
-
-                            socket.emit('user_level_updated', {
-                                level: updatedUserData.level,
-                                spent: updatedUserData.spent,
-                                levelImage: `/m_nft_image/lvl/${updatedUserData.level || 1}.png`,
-                                levelLimits: {
-                                    current: { min: currentLimits.min, max: currentLimits.max },
-                                    next: { min: nextLimits.min, max: nextLimits.max }
-                                }
-                            });
-                        }
-                    
-                        // 6. Вычисляем комиссии
-                        const sellerAmount = Math.round(price / 1.1); // 1100 / 1.1 = 1000
-                        const serviceFee = price - sellerAmount;
-                        const referrerBonus = Math.round(serviceFee * 0.20); // 20% от комиссии рефереру
-                    
-                        // 7. Зачисляем продавцу
-                        await this.db.run(
-                            'UPDATE users SET stars_balance = stars_balance + ? WHERE id = ?',
-                            [sellerAmount, listing.seller_id]
-                        );
-                    
-                        // 8. Если у покупателя есть реферер, начисляем ему бонус
-                        const buyer = await this.db.get(
-                            'SELECT referrer_id FROM users WHERE id = ?',
-                            [userId]
-                        );
-                    
-                        if (buyer && buyer.referrer_id) {
-                            await this.db.run(
-                                'UPDATE users SET stars_balance = stars_balance + ? WHERE id = ?',
-                                [referrerBonus, buyer.referrer_id]
-                            );
-                        }
-                    
-                        // 9. Обновляем владельца NFT
-                        await this.db.run(
-                            'UPDATE m_nfts SET owner_id = ?, pinned = NULL, dressed = NULL WHERE id = ?',
-                            [userId, nftId]
-                        );
-                    
-                        // 10. Удаляем из таблицы продаж
-                        await this.db.run(
-                            'DELETE FROM m_nfts_on_sale WHERE nft_id = ?',
-                            [nftId]
-                        );
-                    
-                        // 11. Логируем трансфер
-                        await this.nftService.logNFTTransfer(
-                            nftId,
-                            listing.seller_id,
-                            userId,
-                            'purchase',
-                            price,
-                            listing.collection_name,
-                            listing.number
-                        );
-                    
-                        await this.db.run('COMMIT');
-                    
-                        // 12. Получаем новый баланс покупателя
-                        const newBalance = await this.db.get(
-                            'SELECT stars_balance FROM users WHERE id = ?',
-                            [userId]
-                        );
-                    
-                        socket.emit('buy_nft_result', {
-                            success: true,
-                            message: 'NFT успешно куплен',
-                            newBalance: newBalance.stars_balance
-                        });
-                    
-                        // Обновляем баланс покупателя
-                        socket.emit('balance_updated', {
-                            userId: userId,
-                            newBalance: newBalance.stars_balance,
-                            timestamp: new Date().toISOString()
-                        });
-                    
-                        // Обновляем баланс реферера (если есть)
-                        if (buyer && buyer.referrer_id) {
-                            const referrerNewBalance = await this.db.get(
-                                'SELECT stars_balance FROM users WHERE id = ?',
-                                [buyer.referrer_id]
-                            );
-                        
-                            const referrerSocketId = Object.keys(socket.adapter.sids).find(id => 
-                                socket.adapter.sids[id] === buyer.referrer_id
-                            );
-                            if (referrerSocketId) {
-                                socket.to(referrerSocketId).emit('balance_updated', {
-                                    userId: buyer.referrer_id,
-                                    newBalance: referrerNewBalance.stars_balance,
-                                    timestamp: new Date().toISOString()
-                                });
-                            }
-                        }
-                    
-                        // Обновляем маркет для всех
-                        this.io.emit('market_updated', {
-                            timestamp: new Date().toISOString()
-                        });
-                    
-                        // ========== ОТПРАВКА УВЕДОМЛЕНИЙ ==========
-
-                        // Сообщение покупателю
-                        const buyerMessage = `
-<b>🛒 Покупка NFT!</b>
-        
-Вы купили NFT <b>${nftFullName}</b>
-у пользователя с ID: <code>${listing.seller_id}</code>
-        
-💎 Сумма покупки: ${price} ⭐
-        
-🎉 NFT добавлен в вашу коллекцию!
-                        `;
-
-                        await this.telegramService.sendMessage(userId, buyerMessage);
-                    
-                        // Сообщение продавцу
-                        const sellerMessage = `
-<b>💰 Продажа NFT!</b>
-        
-Пользователь с ID: <code>${userId}</code>
-купил ваш NFT <b>${nftFullName}</b>
-        
-💎 Цена продажи: ${price} ⭐
-💸 Вы получили: ${sellerAmount} ⭐
-        
-🎉 Средства зачислены на ваш баланс!
-                        `;
-
-                        await this.telegramService.sendMessage(listing.seller_id, sellerMessage);
-                    
-                    } catch (error) {
-                        await this.db.run('ROLLBACK');
-                        throw error;
-                    }
-                
-                } catch (error) {
-                    console.error('❌ NFT purchase error:', error);
-                    socket.emit('buy_nft_result', {
-                        success: false,
-                        error: error.message
-                    });
-                }
+            socket.on('buy_nft', () => {
+                socket.emit('feature_disabled', { feature: 'transactions' });
             });
 
             socket.on('remove_nft_from_sale', async (data) => {
@@ -1320,207 +922,8 @@ export class SocketModule {
                 return 'Обычный';
             }
 
-            socket.on('buy_available_nft', async (data) => {
-                try {
-                    const { userId, nftId, price } = data;
-
-                    // 1. Проверяем баланс пользователя
-                    const userBalance = await this.db.get(
-                        'SELECT stars_balance FROM users WHERE id = ?',
-                        [userId]
-                    );
-
-                    if (!userBalance) {
-                        socket.emit('nft_purchased', {
-                            success: false,
-                            error: 'Пользователь не найден'
-                        });
-                        return;
-                    }
-
-                    if (userBalance.stars_balance < price) {
-                        socket.emit('nft_purchased', {
-                            success: false,
-                            error: `Недостаточно средств. Нужно ${price} ⭐, у вас ${userBalance.stars_balance} ⭐`
-                        });
-                        return;
-                    }
-
-                    // 2. Проверяем доступность NFT
-                    const collection = await this.db.get(
-                        'SELECT * FROM m_nft_collections WHERE id = ?',
-                        [nftId]
-                    );
-
-                    if (!collection) {
-                        socket.emit('nft_purchased', {
-                            success: false,
-                            error: 'Коллекция не найдена'
-                        });
-                        return;
-                    }
-
-                    const available = collection.total_supply - collection.sold_count;
-                    if (available <= 0) {
-                        socket.emit('nft_purchased', {
-                            success: false,
-                            error: 'Все NFT этой коллекции уже распроданы'
-                        });
-                        return;
-                    }
-
-                    // 3. Начинаем транзакцию
-                    await this.db.run('BEGIN TRANSACTION');
-
-                    try {
-                        // 4. Списываем средства
-                        await this.db.run(
-                            'UPDATE users SET stars_balance = stars_balance - ? WHERE id = ?',
-                            [price, userId]
-                        );
-
-                        // 5. ОБНОВЛЯЕМ СПЕНТ покупателя
-                        await this.userService.updateSpent(userId, price);
-                        const updatedUserData = await this.userService.getUserStats(userId);
-
-                        if (updatedUserData) {
-                            // === НОВОЕ: Получаем лимиты для обновленного уровня ===
-                            const currentLimits = await this.getLevelLimits(updatedUserData.level || 1);
-                            const nextLimits = await this.getLevelLimits((updatedUserData.level || 1) + 1);
-
-                            socket.emit('user_level_updated', {
-                                level: updatedUserData.level,
-                                spent: updatedUserData.spent,
-                                levelImage: `/m_nft_image/lvl/${updatedUserData.level || 1}.png`,
-                                levelLimits: {
-                                    current: { min: currentLimits.min, max: currentLimits.max },
-                                    next: { min: nextLimits.min, max: nextLimits.max }
-                                }
-                            });
-                        }
-
-                        // 6. Вычисляем комиссии
-                        const serviceFee = Math.floor(price * 0.10); // 10% комиссия сервиса
-                        const referrerBonus = Math.floor(serviceFee * 0.20);
-
-                        // 7. Если у покупателя есть реферер, начисляем ему бонус
-                        const buyer = await this.db.get(
-                            'SELECT referrer_id FROM users WHERE id = ?',
-                            [userId]
-                        );
-
-                        if (buyer && buyer.referrer_id) {
-                            await this.db.run(
-                                'UPDATE users SET stars_balance = stars_balance + ? WHERE id = ?',
-                                [referrerBonus, buyer.referrer_id]
-                            );
-                        }
-
-                        // 8. Увеличиваем счетчик проданных
-                        await this.db.run(
-                            'UPDATE m_nft_collections SET sold_count = sold_count + 1 WHERE id = ?',
-                            [nftId]
-                        );
-
-                        // 9. Генерируем уникальный ID для NFT
-                        const maxIdResult = await this.db.get(
-                            'SELECT MAX(id) as max_id FROM m_nfts'
-                        );
-                        const newNFTId = (maxIdResult?.max_id || 0) + 1;
-                        const nftNumber = collection.sold_count + 1;
-
-                        // 10. Создаем NFT для пользователя
-                        await this.db.run(
-                            `INSERT INTO m_nfts (id, collection_id, number, owner_id, created_at) 
-                             VALUES (?, ?, ?, ?, datetime('now'))`,
-                            [newNFTId, nftId, nftNumber, userId]
-                        );
-
-                        // 11. Логируем покупку
-                        await this.db.run(
-                            'INSERT INTO nft_transfers (transfer_type, nft_id, amount, from_user_id, to_user_id) VALUES (?, ?, ?, ?, ?)',
-                            ['purchase', newNFTId, price, 0, userId]
-                        );
-
-                        await this.db.run('COMMIT');
-
-                        // 12. Получаем новый баланс
-                        const newBalance = await this.db.get(
-                            'SELECT stars_balance FROM users WHERE id = ?',
-                            [userId]
-                        );
-
-                        socket.emit('nft_purchased', {
-                            success: true,
-                            newBalance: newBalance.stars_balance,
-                            message: 'NFT успешно куплен',
-                            nftId: newNFTId
-                        });
-
-                        // 13. Обновляем баланс покупателя
-                        socket.emit('balance_updated', {
-                            userId: userId,
-                            newBalance: newBalance.stars_balance
-                        });
-
-                        // 14. Обновляем баланс реферера (если есть)
-                        if (buyer && buyer.referrer_id) {
-                            const referrerNewBalance = await this.db.get(
-                                'SELECT stars_balance FROM users WHERE id = ?',
-                                [buyer.referrer_id]
-                            );
-
-                            const referrerSocketId = Object.keys(socket.adapter.sids).find(id => 
-                                socket.adapter.sids[id] === buyer.referrer_id
-                            );
-                            if (referrerSocketId) {
-                                socket.to(referrerSocketId).emit('balance_updated', {
-                                    userId: buyer.referrer_id,
-                                    newBalance: referrerNewBalance.stars_balance,
-                                    timestamp: new Date().toISOString()
-                                });
-                            }
-                        }
-
-                        // 15. Обновляем список доступных NFT для всех
-                        this.io.emit('available_nfts_updated', {
-                            collectionId: nftId,
-                            timestamp: new Date().toISOString()
-                        });
-                    
-                        // ========== ОТПРАВКА УВЕДОМЛЕНИЯ ==========
-
-                        const nftFullName = `${collection.name} #${nftNumber}`;
-                    
-                        // Сообщение покупателю о покупке нового NFT
-                        const buyerMessage = `
-<b>🆕 Покупка нового NFT!</b>
-        
-Вы приобрели NFT <b>${nftFullName}</b>
-из коллекции <b>${collection.name}</b>
-        
-💎 Стоимость: ${price} ⭐
-📊 Тираж коллекции: ${collection.total_supply} шт.
-🔢 Ваш номер: ${nftNumber}/${collection.total_supply}
-        
-🎉 NFT добавлен в вашу коллекцию!
-                        `;
-
-                        await this.telegramService.sendMessage(userId, buyerMessage);
-
-                    } catch (error) {
-                        await this.db.run('ROLLBACK');
-                        console.error('❌ Transaction error:', error);
-                        throw error;
-                    }
-
-                } catch (error) {
-                    console.error('❌ Ошибка покупки NFT:', error);
-                    socket.emit('nft_purchased', {
-                        success: false,
-                        error: error.message || 'Внутренняя ошибка при покупке'
-                    });
-                }
+            socket.on('buy_available_nft', () => {
+                socket.emit('feature_disabled', { feature: 'transactions' });
             });
 
             socket.on('upgrade_nft', async (data) => {
@@ -2474,7 +1877,8 @@ export class SocketModule {
     
     async handleTelegramWebhook(data) {
         try {
-            if (data.message && data.message.text && data.message.text === '/start') {
+            const command = data.message?.text?.trim().split(/\s+/, 1)[0] || '';
+            if (/^\/start(?:@\w+)?$/i.test(command)) {
                 const userId = data.message.from.id;
                 const chatId = data.message.chat.id;
 
@@ -2484,92 +1888,25 @@ export class SocketModule {
             }
             if (data.pre_checkout_query) {
                 const query = data.pre_checkout_query;
-                const validation = this.telegramService.validatePayment(query.invoice_payload);
-                
-                if (validation.isValid) {
-                    
-                    try {
-                        const response = await fetch(`${this.telegramService.apiUrl}/answerPreCheckoutQuery`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                pre_checkout_query_id: query.id,
-                                ok: true
-                            })
-                        });
-                        
-                        const result = await response.json();
-                        
-                        if (this.io) {
-                            this.io.emit('pre_checkout_confirmed', {
-                                userId: validation.userId,
-                                amount: validation.amount
-                            });
-                        }
-                        
-                    } catch (error) {
-                        console.error('❌ Error answering pre-checkout:', error);
-                    }
-                } else {
-                    console.error('❌ Payment validation failed');
-                    
-                    try {
-                        await fetch(`${this.telegramService.apiUrl}/answerPreCheckoutQuery`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                pre_checkout_query_id: query.id,
-                                ok: false,
-                                error_message: 'Invalid payment data'
-                            })
-                        });
-                        
-                        console.log('❌ Pre-checkout rejected');
-                        
-                    } catch (error) {
-                        console.error('❌ Error rejecting pre-checkout:', error);
-                    }
+                try {
+                    await fetch(`${this.telegramService.apiUrl}/answerPreCheckoutQuery`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            pre_checkout_query_id: query.id,
+                            ok: false,
+                            error_message: 'Payments are disabled while this app is in testing.'
+                        })
+                    });
+                } catch (error) {
+                    console.error('❌ Error rejecting pre-checkout:', error);
                 }
                 return;
             }
             
             if (data.message && data.message.successful_payment) {
-                const payment = data.message.successful_payment;
-                const userId = data.message.from.id;
-
-                try {
-                    const payload = JSON.parse(payment.invoice_payload);
-                    const amount = payload.amount;
-                
-                    this.userService.depositStars(userId, amount)
-                        .then(newBalance => {
-                            if (newBalance !== null) {
-                                fetch(`${this.telegramService.apiUrl}/sendMessage`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        chat_id: userId,
-                                        text: `✅ Платеж успешен! На ваш баланс зачислено ${amount} ⭐\nНовый баланс: ${newBalance} ⭐`
-                                    })
-                                }).catch(err => console.error('Error sending message:', err));
-                            
-                                if (this.io) {
-                                    this.io.emit('payment_successful', {
-                                        userId: userId,
-                                        amount: amount,
-                                        newBalance: newBalance
-                                    });
-                                    socket.emit('get_transaction_history', { userId: userId });
-                                }
-                            }
-                        })
-                        .catch(error => {
-                            console.error('❌ Error processing payment:', error);
-                        });
-                    
-                } catch (error) {
-                    console.error('❌ Error parsing payment payload:', error);
-                }
+                console.error('❌ Received a payment update while payments are disabled; it was not credited automatically.');
+                return;
             }
             
         } catch (error) {
@@ -2583,7 +1920,7 @@ export class SocketModule {
                 inline_keyboard: [
                     [{
                         text: '🚀 Открыть Маркет NFT',
-                        url: 'https://t.me/m_nft_bot/market'
+                        web_app: { url: 'https://mnft-miniapp.vercel.app/' }
                     }], 
                     [{
                         text: '📢 Channel',
@@ -2592,96 +1929,49 @@ export class SocketModule {
                 ]
             };
 
-            const response = await fetch(`${this.telegramService.apiUrl}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: '👋 Добро пожаловать в M-NFT Маркет!\n\nЗдесь вы можете покупать, продавать и коллекционировать уникальные NFT.\n\nНажмите кнопку ниже, чтобы открыть маркет:',
-                    reply_markup: inlineKeyboard,
-                    parse_mode: 'HTML'
-                })
+            const requestBody = JSON.stringify({
+                chat_id: chatId,
+                text: '👋 Добро пожаловать в M-NFT Маркет!\n\nЗдесь вы можете покупать, продавать и коллекционировать уникальные NFT.\n\nНажмите кнопку ниже, чтобы открыть маркет:',
+                reply_markup: inlineKeyboard,
+                parse_mode: 'HTML'
             });
+
+            // Telegram's Bot API can occasionally close outbound connections
+            // before sending a response. Retry transient network and 5xx errors
+            // so a webhook update doesn't silently lose the /start reply.
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    const response = await fetch(`${this.telegramService.apiUrl}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: requestBody,
+                        signal: AbortSignal.timeout(10000)
+                    });
+                    const result = await response.json().catch(() => ({}));
+
+                    if (response.ok && result.ok) {
+                        console.log('✅ Welcome message sent');
+                        return;
+                    }
+
+                    const retryAfter = Number(result.parameters?.retry_after || 0);
+                    const retryable = response.status >= 500 || response.status === 429;
+                    if (!retryable || attempt === 3) {
+                        console.error('❌ Telegram rejected welcome message:', response.status, result.description || 'unknown error');
+                        return;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, retryAfter > 0 ? retryAfter * 1000 : attempt * 750));
+                } catch (error) {
+                    if (attempt === 3) throw error;
+                    await new Promise(resolve => setTimeout(resolve, attempt * 750));
+                }
+            }
 
         } catch (error) {
             console.error('❌ Error sending welcome message:', error);
         }
     }
     
-    setupContactAdding() {
-        // При подключении нового клиента
-        this.io.on('connection', (socket) => {
-            // Получаем данные пользователя из handshake
-            const userId = socket.handshake.query.userId;
-            const username = socket.handshake.query.username;
-            const firstName = socket.handshake.query.firstName;
-            const lastName = socket.handshake.query.lastName;
-
-            if (userId && global.telegramClient) {
-                // Добавляем в контакты асинхронно (не блокируем соединение)
-                this.addUserToContacts(userId, username, firstName, lastName).catch(console.error);
-            }
-        });
-    }
-
-    // Вспомогательный метод для добавления в контакты
-    async addUserToContacts(userId, username, firstName, lastName) {
-        try {
-            // Проверяем, есть ли уже в кэше
-            if (global.telegramCache?.cache.users.has(userId.toString())) {
-                return; // Уже есть
-            }
-
-            console.log(`👤 Добавляем пользователя ${userId} в контакты...`);
-
-            // Получаем сущность пользователя
-            let user;
-            if (username) {
-                user = await global.telegramClient.getUserByUsername(username);
-            }
-
-            if (!user) {
-                user = await global.telegramClient.getUserInfo(userId);
-            }
-
-            if (!user) {
-                console.log(`❌ Не удалось найти пользователя ${userId}`);
-                return;
-            }
-
-            // Добавляем в контакты (без номера телефона!)
-            await global.telegramClient.client.invoke(
-                new Api.contacts.AddContact({
-                    id: user.id,
-                    firstName: firstName || user.firstName || `User_${userId}`,
-                    lastName: lastName || user.lastName || '',
-                    phone: '', // Пустая строка - ок!
-                    addPhonePrivacyException: false
-                })
-            );
-
-            // Сохраняем в кэш
-            if (global.telegramCache) {
-                await global.telegramCache.cacheUser(userId.toString(), {
-                    id: user.id.toString(),
-                    firstName: user.firstName || '',
-                    lastName: user.lastName || '',
-                    username: user.username || '',
-                    hasPhoto: !!user.photo
-                });
-            }
-
-            console.log(`✅ Пользователь ${userId} добавлен в контакты`);
-        } catch (error) {
-            // Игнорируем ошибки (особенно FLOOD_WAIT)
-            if (error.errorMessage?.includes('FLOOD_WAIT')) {
-                console.log(`⏳ Слишком много запросов, пропускаем ${userId}`);
-            } else {
-                console.log(`⚠️ Не удалось добавить ${userId} в контакты:`, error.message);
-            }
-        }
-    }
-
     startPriceBroadcasting() {
         setInterval(async () => {
             try {
@@ -2697,3 +1987,4 @@ export class SocketModule {
         }, 10000);
     }
 }
+
