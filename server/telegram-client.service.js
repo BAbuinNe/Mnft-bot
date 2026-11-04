@@ -23,8 +23,10 @@ export class TelegramClientService {
     }
 
     async init() {
-        let sessionString = '';
-        if (fs.existsSync(this.sessionPath)) {
+        let sessionString = process.env.TELEGRAM_SESSION_STRING || '';
+        if (sessionString) {
+            console.log('🔐 Using injected Telegram session');
+        } else if (fs.existsSync(this.sessionPath)) {
             sessionString = fs.readFileSync(this.sessionPath, 'utf8');
             console.log('📁 Найдена сохраненная сессия');
         } else {
@@ -50,6 +52,15 @@ export class TelegramClientService {
 
         try {
             console.log('🔄 Подключение к Telegram...');
+
+            if (process.env.VERCEL) {
+                await this.client.connect();
+                if (!await this.client.checkAuthorization()) {
+                    throw new Error('TELEGRAM_SESSION_STRING is invalid or unauthorized');
+                }
+                this.isConnected = true;
+                return true;
+            }
             
             await this.client.start({
                 phoneNumber: async () => {
@@ -416,3 +427,4 @@ export class TelegramClientService {
         }
     }
 }
+
