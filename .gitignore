@@ -1,10 +1,10 @@
 **/node_modules/
 **/.env
 **/.env.*
-**/*.db
 **/*.sqlite
 **/avatars/
 **/user-cache.json
 .vercel/
 .npm-cache/
 *.log
+
