@@ -1,9 +1,8 @@
-import fetch from 'node-fetch';
-
 export class WebhookSetup {
-    constructor(botToken, webhookUrl) {
+    constructor(botToken, webhookUrl, secretToken) {
         this.botToken = botToken;
         this.webhookUrl = webhookUrl;
+        this.secretToken = secretToken;
         this.apiUrl = `https://api.telegram.org/bot${botToken}`;
     }
 
@@ -14,11 +13,8 @@ export class WebhookSetup {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     url: this.webhookUrl,
-                    drop_pending_updates: true,
-                    allowed_updates: [
-                        'pre_checkout_query',
-                        'message'
-                    ]
+                    ...(this.secretToken ? { secret_token: this.secretToken } : {}),
+                    allowed_updates: ['message']
                 })
             });
 
@@ -65,3 +61,4 @@ export class WebhookSetup {
         }
     }
 }
+
