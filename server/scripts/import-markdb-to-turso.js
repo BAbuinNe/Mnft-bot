@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import 'dotenv/config';
 import { open as openSqlite } from 'sqlite';
 import sqlite3 from 'sqlite3';
 import { createClient } from '@libsql/client';
