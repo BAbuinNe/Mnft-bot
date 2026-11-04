@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { copyFile, readFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -84,17 +84,14 @@ export async function openDatabase() {
     ]);
 
     if (process.env.VERCEL) {
-        // Use the bundled demo snapshot as a seed. Vercel's /tmp is writable,
-        // but instance storage is ephemeral and is not shared across instances.
-        const snapshot = path.join(here, 'mark.db');
-        const runtimeDatabase = path.join('/tmp', 'mnft-demo-mark.db');
-        await copyFile(snapshot, runtimeDatabase);
-        console.warn('⚠️ Using bundled demo SQLite snapshot in /tmp. Runtime changes are temporary; configure Turso for durable storage.');
-        return open({ filename: runtimeDatabase, driver: sqlite3.default.Database });
+        console.warn('⚠️ TURSO is not configured; using a clean in-memory database. Data will not survive function restarts.');
+        const database = await open({ filename: ':memory:', driver: sqlite3.default.Database });
+        await database.exec(await readFile(path.join(here, 'schema.sql'), 'utf8'));
+        return database;
     }
 
     return open({
-        filename: path.join(here, 'mark.db'),
+        filename: path.resolve(here, '../db/mark.db'),
         driver: sqlite3.default.Database
     });
 }
