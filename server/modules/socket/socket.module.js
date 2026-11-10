@@ -6,6 +6,7 @@ import { CurrencyService } from '../currency/currency.service.js';
 import { NFTService } from '../nft/nft.service.js';
 import { UserService } from '../user/user.service.js'; 
 import { TelegramService } from '../telegram/telegram.service.js';
+import { PurchaseService } from '../../purchases.js';
 
 export class SocketModule {
     constructor(io, redisClient, db) {
@@ -24,6 +25,7 @@ export class SocketModule {
         this.currencyService = new CurrencyService(redisClient);
         this.nftService = new NFTService(db);
         this.userService = new UserService(db);
+        this.purchaseService = new PurchaseService(db);
         
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
         if (!botToken) {
@@ -48,7 +50,8 @@ export class SocketModule {
                 ['remove_nft_from_sale', 'userId'], ['upgrade_nft', 'userId'],
                 ['toggle_pin_nft', 'userId'], ['wear_nft', 'userId'],
                 ['get_user_nfts', null], ['get_user_nfts_with_filters', 'userId'],
-                ['get_worn_nft', null]
+                ['get_worn_nft', null], ['buy_nft', 'userId'],
+                ['buy_available_nft', 'userId']
             ]);
             socket.on = (eventName, handler) => registerHandler(
                 eventName,
@@ -588,8 +591,15 @@ export class SocketModule {
                 }
             });
 
-            socket.on('buy_nft', () => {
-                socket.emit('feature_disabled', { feature: 'transactions' });
+            socket.on('buy_nft', async (data) => {
+                try {
+                    const result = await this.purchaseService.buyMarket(Number(data?.nftId), socket.data.telegramUserId);
+                    socket.emit('buy_nft_result', { success: true, ...result });
+                    socket.emit('balance_updated', { userId: socket.data.telegramUserId, newBalance: result.newBalance });
+                    this.io.emit('market_updated', { timestamp: new Date().toISOString() });
+                } catch (error) {
+                    socket.emit('buy_nft_result', { success: false, error: error.message });
+                }
             });
 
             socket.on('remove_nft_from_sale', async (data) => {
@@ -919,8 +929,15 @@ export class SocketModule {
                 return 'Обычный';
             }
 
-            socket.on('buy_available_nft', () => {
-                socket.emit('feature_disabled', { feature: 'transactions' });
+            socket.on('buy_available_nft', async (data) => {
+                try {
+                    const result = await this.purchaseService.buyCollection(Number(data?.nftId), socket.data.telegramUserId);
+                    socket.emit('nft_purchased', { success: true, ...result });
+                    socket.emit('balance_updated', { userId: socket.data.telegramUserId, newBalance: result.newBalance });
+                    this.io.emit('market_updated', { timestamp: new Date().toISOString() });
+                } catch (error) {
+                    socket.emit('nft_purchased', { success: false, error: error.message });
+                }
             });
 
             socket.on('upgrade_nft', async (data) => {
