@@ -56,7 +56,7 @@ test('Stars credit only once after matching successful_payment', async () => {
         assert.deepEqual(await payments.creditPayment(message), { alreadyCredited: true });
         assert.equal((await db.get('SELECT stars_balance FROM users WHERE id = 42')).stars_balance, 7);
         assert.equal((await db.get('SELECT COUNT(*) AS n FROM transaction_history')).n, 1);
-        const refunded = { from: { id: 42 }, refunded_payment: {
+        const refunded = { refunded_payment: {
             invoice_payload: invoice.invoiceId, currency: 'XTR', total_amount: 7,
             telegram_payment_charge_id: 'charge-1'
         } };
