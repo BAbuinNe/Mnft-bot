@@ -124,28 +124,25 @@ async function setupDailyCacheRefresh() {
 }
 
 async function initializeModules() {
-  try {
-    // Подключаем Redis
-    await pubClient.connect();
-    await subClient.connect();
-    io.adapter(createAdapter(pubClient, subClient));
-
-    // Инициализируем Telegram клиент
-    await initializeTelegramClient();
-
-    // Инициализируем единый модуль сокетов
-    const socketModule = new SocketModule(io, pubClient, db);
-    socketModuleInstance = socketModule;
-    
-    // The webhook is configured once on the production alias. Do not reset it
-    // on every Vercel serverless cold start.
-    await setupTelegramWebhook();
-    await setupDailyCacheRefresh();
-    console.log('✅ All modules initialized successfully');
-  } catch (error) {
-    console.error('❌ Module initialization failed:', error);
-    throw error;
+  let redisReady = false;
+  if (!process.env.VERCEL) {
+    try {
+      await pubClient.connect();
+      await subClient.connect();
+      io.adapter(createAdapter(pubClient, subClient));
+      redisReady = true;
+    } catch (error) {
+      console.error('Redis unavailable; HTTP routes remain active:', error.message);
+    }
   }
+  try { await initializeTelegramClient(); }
+  catch (error) { console.error('MTProto unavailable; HTTP routes remain active:', error.message); }
+  if (redisReady && process.env.TELEGRAM_BOT_TOKEN) {
+    try { socketModuleInstance = new SocketModule(io, pubClient, db); }
+    catch (error) { console.error('Socket module unavailable:', error.message); }
+  }
+  if (!process.env.VERCEL || process.env.VERCEL_ENV === 'production') await setupTelegramWebhook();
+  await setupDailyCacheRefresh();
 }
 
 async function setupTelegramWebhook() {
@@ -359,8 +356,8 @@ process.on('SIGTERM', async () => {
       await telegramClient.disconnect();
   }
   
-  await pubClient.quit();
-  await subClient.quit();
+  if (pubClient.isOpen) await pubClient.quit();
+  if (subClient.isOpen) await subClient.quit();
   await db.close?.();
   server.close(() => {
     process.exit(0);

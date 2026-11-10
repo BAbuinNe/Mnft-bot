@@ -15,7 +15,8 @@ export class WebhookSetup {
                     url: this.webhookUrl,
                     ...(this.secretToken ? { secret_token: this.secretToken } : {}),
                     allowed_updates: ['message', 'pre_checkout_query']
-                })
+                }),
+                signal: AbortSignal.timeout(5000)
             });
 
             const data = await response.json();
