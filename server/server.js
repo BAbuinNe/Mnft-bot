@@ -56,9 +56,9 @@ io.use((socket, next) => {
 
 const db = await openDatabase();
 const payments = createPayments({ db, botToken: process.env.TELEGRAM_BOT_TOKEN });
-const paymentsReady = Boolean(process.env.ENABLE_STAR_PAYMENTS === 'true' &&
-    process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN &&
+const paymentsConfigured = Boolean(process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN &&
     process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_WEBHOOK_SECRET);
+const paymentsReady = paymentsConfigured && process.env.ENABLE_STAR_PAYMENTS === 'true';
 
 let socketModuleInstance = null;
 let telegramClient = null;
@@ -252,8 +252,8 @@ app.post('/webhook/telegram', async (req, res) => {
         return res.status(503).json({ ok: false });
     }
 
-    if (req.body?.pre_checkout_query || req.body?.message?.successful_payment) {
-        if (!paymentsReady) {
+    if (req.body?.pre_checkout_query || req.body?.message?.successful_payment || req.body?.message?.refunded_payment) {
+        if (!paymentsConfigured || (req.body.pre_checkout_query && !paymentsReady)) {
             if (req.body.pre_checkout_query && process.env.TELEGRAM_BOT_TOKEN) {
                 try { await telegramMethod(process.env.TELEGRAM_BOT_TOKEN, 'answerPreCheckoutQuery', {
                     pre_checkout_query_id: req.body.pre_checkout_query.id,
@@ -265,7 +265,8 @@ app.post('/webhook/telegram', async (req, res) => {
         }
         try {
             if (req.body.pre_checkout_query) await payments.answerPreCheckout(req.body.pre_checkout_query);
-            else await payments.creditPayment(req.body.message);
+            else if (req.body.message.successful_payment) await payments.creditPayment(req.body.message);
+            else await payments.recordRefund(req.body.message);
             return res.status(200).json({ ok: true });
         } catch (error) {
             console.error('Payment webhook failed:', error.message);

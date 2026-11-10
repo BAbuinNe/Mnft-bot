@@ -117,3 +117,10 @@ CREATE TABLE IF NOT EXISTS star_payments (
   amount INTEGER NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS star_refunds (
+  charge_id TEXT PRIMARY KEY REFERENCES star_payments(charge_id),
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  amount INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

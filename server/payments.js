@@ -98,5 +98,33 @@ export function createPayments({ db, botToken }) {
         return db.withContext ? db.withContext(perform) : perform();
     }
 
-    return { createInvoice, answerPreCheckout, creditPayment };
+    async function recordRefund(message) {
+        const refund = message.refunded_payment;
+        const userId = Number(message.from?.id);
+        const chargeId = refund?.telegram_payment_charge_id;
+        if (!Number.isSafeInteger(userId) || !chargeId) throw new Error('Incomplete refund update');
+        const perform = async () => {
+            await db.run('BEGIN TRANSACTION');
+            try {
+                const payment = await db.get('SELECT * FROM star_payments WHERE charge_id = ?', [chargeId]);
+                if (!payment || Number(payment.user_id) !== userId || refund.currency !== 'XTR' ||
+                    Number(payment.amount) !== Number(refund.total_amount) ||
+                    payment.invoice_id !== refund.invoice_payload) throw new Error('Refund does not match payment');
+                const existing = await db.get('SELECT charge_id FROM star_refunds WHERE charge_id = ?', [chargeId]);
+                if (existing) { await db.run('COMMIT'); return { alreadyRecorded: true }; }
+                await db.run('INSERT INTO star_refunds (charge_id, user_id, amount) VALUES (?, ?, ?)',
+                    [chargeId, userId, payment.amount]);
+                const updated = await db.run('UPDATE users SET stars_balance = stars_balance - ? WHERE id = ?',
+                    [payment.amount, userId]);
+                if (updated.changes !== 1) throw new Error('User balance update failed');
+                await db.run('INSERT INTO transaction_history (user_id, type, amount, status, completed_at, notes) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?)',
+                    [userId, 'withdrawal', payment.amount, 'completed', `Telegram Stars refund ${chargeId}`]);
+                await db.run('COMMIT');
+                return { alreadyRecorded: false };
+            } catch (error) { await db.run('ROLLBACK'); throw error; }
+        };
+        return db.withContext ? db.withContext(perform) : perform();
+    }
+
+    return { createInvoice, answerPreCheckout, creditPayment, recordRefund };
 }
