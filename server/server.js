@@ -35,7 +35,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Redis клиенты
 const pubClient = redis.createClient({ 
-  url: process.env.REDIS_URL
+  url: process.env.REDIS_URL,
+  socket: { connectTimeout: 3000, reconnectStrategy: retries => retries > 2 ? false : 200 }
 });
 const subClient = pubClient.duplicate();
 
@@ -125,7 +126,8 @@ async function setupDailyCacheRefresh() {
 
 async function initializeModules() {
   let redisReady = false;
-  if (!process.env.VERCEL) {
+  if (process.env.REDIS_URL && process.env.TELEGRAM_BOT_TOKEN &&
+      (!process.env.VERCEL || process.env.VERCEL_ENV === 'production')) {
     try {
       await pubClient.connect();
       await subClient.connect();
@@ -141,7 +143,9 @@ async function initializeModules() {
     try { socketModuleInstance = new SocketModule(io, pubClient, db); }
     catch (error) { console.error('Socket module unavailable:', error.message); }
   }
-  if (!process.env.VERCEL || process.env.VERCEL_ENV === 'production') await setupTelegramWebhook();
+  // Production webhook was installed once with /start and pre_checkout_query enabled.
+  // Repeating setWebhook for every cold start hits Telegram's rate limit.
+  if (!process.env.VERCEL || process.env.CONFIGURE_TELEGRAM_WEBHOOK === 'true') await setupTelegramWebhook();
   await setupDailyCacheRefresh();
 }
 
