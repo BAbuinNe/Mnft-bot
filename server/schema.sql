@@ -101,3 +101,19 @@ CREATE TABLE IF NOT EXISTS transaction_history (
   notes TEXT
 );
 
+CREATE TABLE IF NOT EXISTS star_invoices (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  amount INTEGER NOT NULL CHECK(amount BETWEEN 5 AND 10000),
+  status TEXT NOT NULL CHECK(status IN ('pending', 'checking', 'paid', 'failed')),
+  expires_at INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS star_payments (
+  charge_id TEXT PRIMARY KEY,
+  invoice_id TEXT NOT NULL UNIQUE REFERENCES star_invoices(id),
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  amount INTEGER NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -12,6 +12,7 @@ const { createAdapter } = require('@socket.io/redis-adapter');
 const cors = require('cors');
 import cron from 'node-cron';
 import { timingSafeEqual } from 'node:crypto';
+import { createPayments, telegramMethod, verifyInitData } from './payments.js';
 // Импорт модулей
 import { openDatabase } from './database.js';
 import { SocketModule } from './modules/socket/socket.module.js';
@@ -45,8 +46,18 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
+io.use((socket, next) => {
+    const userId = verifyInitData(socket.handshake.auth?.initData, process.env.TELEGRAM_BOT_TOKEN);
+    if (!userId) return next(new Error('Telegram authentication required'));
+    socket.data.telegramUserId = userId;
+    next();
+});
 
 const db = await openDatabase();
+const payments = createPayments({ db, botToken: process.env.TELEGRAM_BOT_TOKEN });
+const paymentsReady = Boolean(process.env.ENABLE_STAR_PAYMENTS === 'true' &&
+    process.env.TURSO_DATABASE_URL && process.env.TURSO_AUTH_TOKEN &&
+    process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_WEBHOOK_SECRET);
 
 let socketModuleInstance = null;
 let telegramClient = null;
@@ -128,7 +139,7 @@ async function initializeModules() {
     
     // The webhook is configured once on the production alias. Do not reset it
     // on every Vercel serverless cold start.
-    if (!process.env.VERCEL) await setupTelegramWebhook();
+    await setupTelegramWebhook();
     await setupDailyCacheRefresh();
     console.log('✅ All modules initialized successfully');
   } catch (error) {
@@ -181,6 +192,53 @@ app.get('/api/collections', async (req, res) => {
     }
 });
 
+function paymentUser(req, res) {
+    if (!paymentsReady) { res.status(503).json({ success: false, error: 'Payments are not configured' }); return null; }
+    const userId = verifyInitData(req.get('x-telegram-init-data'), process.env.TELEGRAM_BOT_TOKEN);
+    if (!userId) { res.status(401).json({ success: false, error: 'Open the Mini App in Telegram' }); return null; }
+    return userId;
+}
+
+app.post('/api/payments/invoice', async (req, res) => {
+    const userId = paymentUser(req, res);
+    if (!userId) return;
+    try {
+        const { invoiceUrl, invoiceId } = await payments.createInvoice(userId, req.body?.amount);
+        res.json({ success: true, invoiceUrl, invoiceId });
+    } catch (error) {
+        const badAmount = error instanceof RangeError;
+        console.error('Invoice error:', error.message);
+        res.status(badAmount ? 400 : 502).json({ success: false, error: badAmount ? error.message : 'Invoice could not be created' });
+    }
+});
+
+app.get('/api/payments/balance', async (req, res) => {
+    const userId = paymentUser(req, res);
+    if (!userId) return;
+    try {
+        const user = await db.get('SELECT stars_balance FROM users WHERE id = ?', [userId]);
+        res.json({ success: true, balance: Number(user?.stars_balance || 0) });
+    } catch (error) {
+        console.error('Balance error:', error.message);
+        res.status(500).json({ success: false, error: 'Balance unavailable' });
+    }
+});
+
+app.get('/api/payments/invoice/:id', async (req, res) => {
+    const userId = paymentUser(req, res);
+    if (!userId) return;
+    try {
+        const invoice = await db.get('SELECT status, amount FROM star_invoices WHERE id = ? AND user_id = ?',
+            [req.params.id, userId]);
+        if (!invoice) return res.status(404).json({ success: false });
+        const user = await db.get('SELECT stars_balance FROM users WHERE id = ?', [userId]);
+        res.json({ success: true, status: invoice.status, balance: Number(user?.stars_balance || 0) });
+    } catch (error) {
+        console.error('Invoice status error:', error.message);
+        res.status(500).json({ success: false, error: 'Invoice status unavailable' });
+    }
+});
+
 app.post('/webhook/telegram', async (req, res) => {
     const configuredSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
     const receivedSecret = req.get('x-telegram-bot-api-secret-token') || '';
@@ -191,6 +249,27 @@ app.post('/webhook/telegram', async (req, res) => {
     }
     if (process.env.VERCEL && !configuredSecret) {
         return res.status(503).json({ ok: false });
+    }
+
+    if (req.body?.pre_checkout_query || req.body?.message?.successful_payment) {
+        if (!paymentsReady) {
+            if (req.body.pre_checkout_query && process.env.TELEGRAM_BOT_TOKEN) {
+                try { await telegramMethod(process.env.TELEGRAM_BOT_TOKEN, 'answerPreCheckoutQuery', {
+                    pre_checkout_query_id: req.body.pre_checkout_query.id,
+                    ok: false, error_message: 'Оплата временно недоступна'
+                }); }
+                catch (error) { console.error('Pre-checkout rejection failed:', error.message); return res.status(500).json({ ok: false }); }
+            }
+            return res.status(req.body.pre_checkout_query ? 200 : 503).json({ ok: Boolean(req.body.pre_checkout_query) });
+        }
+        try {
+            if (req.body.pre_checkout_query) await payments.answerPreCheckout(req.body.pre_checkout_query);
+            else await payments.creditPayment(req.body.message);
+            return res.status(200).json({ ok: true });
+        } catch (error) {
+            console.error('Payment webhook failed:', error.message);
+            return res.status(500).json({ ok: false });
+        }
     }
 
     // Telegram can execute a Bot API method directly from the webhook response.
@@ -216,6 +295,15 @@ app.post('/webhook/telegram', async (req, res) => {
             },
             parse_mode: 'HTML'
         });
+    }
+
+    if (/^\/(?:paysupport|support)(?:@\w+)?$/i.test(command) && message?.chat?.id) {
+        return res.status(200).json({ method: 'sendMessage', chat_id: message.chat.id,
+            text: 'По вопросам оплаты и возврата Stars обратитесь в канал: https://t.me/mnft_channel' });
+    }
+    if (/^\/terms(?:@\w+)?$/i.test(command) && message?.chat?.id) {
+        return res.status(200).json({ method: 'sendMessage', chat_id: message.chat.id,
+            text: 'M-NFT: Stars пополняют баланс внутри приложения. Покупки цифровых предметов и действия с балансом доступны только внутри Mini App. Проверяйте сумму перед оплатой. По вопросам платежей и возвратов: https://t.me/mnft_channel' });
     }
 
     try {
@@ -291,4 +379,3 @@ if (process.env.VERCEL) {
 }
 
 export default server;
-

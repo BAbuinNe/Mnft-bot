@@ -14,7 +14,8 @@ function initSocket(userData = {}) {
     
     socket = io('https://mnft-bot-backend.vercel.app', {
         transports: ['websocket'],
-        query: queryData // Передаем данные в query параметрах
+        query: queryData, // Передаем данные в query параметрах
+        auth: { initData: tg?.initData || '' }
     });
 
     socket.on('connect', () => {
@@ -253,4 +254,3 @@ function initSocket(userData = {}) {
 function getSocket() {
     return socket;
 }
-

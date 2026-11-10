@@ -14,7 +14,7 @@ export class WebhookSetup {
                 body: JSON.stringify({
                     url: this.webhookUrl,
                     ...(this.secretToken ? { secret_token: this.secretToken } : {}),
-                    allowed_updates: ['message']
+                    allowed_updates: ['message', 'pre_checkout_query']
                 })
             });
 
@@ -61,4 +61,3 @@ export class WebhookSetup {
         }
     }
 }
-

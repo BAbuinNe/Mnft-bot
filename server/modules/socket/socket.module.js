@@ -42,11 +42,29 @@ export class SocketModule {
     setupSocketHandlers() {
         this.io.on('connection', (socket) => {
             const registerHandler = socket.on.bind(socket);
+            const ownedEvents = new Map([
+                ['register_user', 'userId'], ['get_referrals', null],
+                ['get_transaction_history', null], ['list_nft_for_sale', 'sellerId'],
+                ['remove_nft_from_sale', 'userId'], ['upgrade_nft', 'userId'],
+                ['toggle_pin_nft', 'userId'], ['wear_nft', 'userId'],
+                ['get_user_nfts', null], ['get_user_nfts_with_filters', 'userId'],
+                ['get_worn_nft', null]
+            ]);
             socket.on = (eventName, handler) => registerHandler(
                 eventName,
-                (...args) => this.db.withContext
-                    ? this.db.withContext(() => handler(...args))
-                    : handler(...args)
+                (...args) => {
+                    if (ownedEvents.has(eventName)) {
+                        const field = ownedEvents.get(eventName);
+                        const supplied = field ? args[0]?.[field] : (args[0]?.userId ?? args[0]);
+                        if (Number(supplied) !== socket.data.telegramUserId) {
+                            socket.emit('authorization_error', { error: 'Telegram user mismatch' });
+                            return;
+                        }
+                    }
+                    return this.db.withContext
+                        ? this.db.withContext(() => handler(...args))
+                        : handler(...args);
+                }
             );
 
             console.log(`[SocketModule] 🔌 Client connected: ${socket.id}`);
@@ -95,27 +113,6 @@ export class SocketModule {
                         success: false, 
                         error: error.message 
                     });
-                }
-            });
-
-            socket.on('user_level_updated', (data) => {
-                console.log('📈 Уровень пользователя обновлен:', data);
-            
-                if (window.appState && window.appState.userData) {
-                    window.appState.userData.level = data.level;
-                    window.appState.userData.spent = data.spent;
-
-                    // === НОВОЕ: Добавляем лимиты уровня в appState ===
-                    if (data.levelLimits) {
-                        window.appState.userData.currentLevelMin = data.levelLimits.current.min;
-                        window.appState.userData.currentLevelMax = data.levelLimits.current.max;
-                        window.appState.userData.nextLevelMin = data.levelLimits.next.min;
-                        window.appState.userData.nextLevelMax = data.levelLimits.next.max;
-                    }
-                
-                    if (window.updateUserLevel) {
-                        window.updateUserLevel();
-                    }
                 }
             });
 
@@ -1000,18 +997,20 @@ export class SocketModule {
                 
                     try {
                         // 9. Списываем звезды (динамическая стоимость)
-                        await this.db.run(
-                            'UPDATE users SET stars_balance = stars_balance - ? WHERE id = ?',
-                            [upgradeCost, userId]
+                        const debit = await this.db.run(
+                            'UPDATE users SET stars_balance = stars_balance - ? WHERE id = ? AND stars_balance >= ?',
+                            [upgradeCost, userId, upgradeCost]
                         );
+                        if (debit.changes !== 1) throw new Error('Недостаточно звезд');
                     
                         // 10. Обновляем NFT с новыми атрибутами
-                        await this.db.run(
+                        const upgraded = await this.db.run(
                             `UPDATE m_nfts 
                              SET model = ?, background = ?, pattern = ?, [update] = 1 
-                             WHERE id = ?`,
-                            [model.id, background.id, pattern.id, nftId]
+                             WHERE id = ? AND owner_id = ? AND COALESCE([update], 0) = 0`,
+                            [model.id, background.id, pattern.id, nftId, userId]
                         );
+                        if (upgraded.changes !== 1) throw new Error('NFT уже улучшен или больше не принадлежит вам');
                     
                         await this.db.run('COMMIT');
                     
@@ -1987,4 +1986,3 @@ export class SocketModule {
         }, 10000);
     }
 }
-

@@ -95,4 +95,3 @@ export async function openDatabase() {
         driver: sqlite3.default.Database
     });
 }
-
