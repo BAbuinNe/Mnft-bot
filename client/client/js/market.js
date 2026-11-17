@@ -1446,7 +1446,7 @@ async function getMarketModelContent() {
                 const isSelected = marketFilters.model.includes(modelId);
                 
                 const imagePath = model.file_name ? 
-                    `/m_nft_image/${collectionName}/${model.file_name}.PNG` : null;
+                    window.getModelImagePath(collectionName, model.file_name) : null;
                 
                 let imageHtml = '';
                 if (imagePath) {

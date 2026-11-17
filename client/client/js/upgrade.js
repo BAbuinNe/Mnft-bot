@@ -1,7 +1,7 @@
 // upgrade-modal.js
 let upgradeNFTData = null;
 let isUpgradeProcessing = false;
-let upgradeCost = 1;
+let upgradeCost = 5;
 
 function createUpgradeConfirmationModal() {
     console.log('🛠️ Создание модалки улучшения NFT');
@@ -57,7 +57,7 @@ function createUpgradeConfirmationModal() {
                     Отмена
                 </button>
                 <button class="action-btn confirm-btn" onclick="confirmUpgrade()">
-                    <span class="btn-price" id="upgradeBtnPrice">1 ⭐</span>
+                    <span class="btn-price" id="upgradeBtnPrice">5 ⭐</span>
                 </button>
             </div>
         </div>
@@ -105,7 +105,7 @@ function showUpgradeConfirmation(nftData, cost = null) {
         upgradeCost = cost;
     } else {
         // Если стоимость не передана, определяем по коллекции
-        upgradeCost = nftData.collectionId === 1 ? 1 : 5;
+        upgradeCost = window.getNFTUpgradeCost(nftData);
     }
     
     console.log(`💰 Стоимость улучшения: ${upgradeCost} ⭐`);
@@ -412,7 +412,7 @@ function completeUpgrade(nftId, cost, newBalance, updatedNFT) {
     // Сбрасываем состояние
     isUpgradeProcessing = false;
     upgradeNFTData = null;
-    upgradeCost = 1; // Сбрасываем на значение по умолчанию
+    upgradeCost = 5; // Сбрасываем на значение по умолчанию
     
     // Закрываем модалки
     closeUpgradeConfirmation();
@@ -497,7 +497,7 @@ function renderUpgradedNFT(nftData, size, config) {
         return renderRegularNFT(nftData, size, config);
     }
     
-    const modelPath = `/m_nft_image/${nftData.collectionName || nftData.collection_name}/${nftData.modelData.file_name}.PNG`;
+    const modelPath = window.getModelImagePath(nftData.collectionName || nftData.collection_name, nftData.modelData.file_name);
     
     // Создаем фон (как в маркете)
     let backgroundStyle = '';

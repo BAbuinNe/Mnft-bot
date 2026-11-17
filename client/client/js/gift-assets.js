@@ -14,6 +14,18 @@
         return null;
     }
 
+    function getModelImagePath(collectionName, fileName) {
+        if (!collectionName || !fileName) return '';
+        const segments = String(fileName).split('/');
+        const last = segments[segments.length - 1];
+        if (!/\.(png|webp|jpe?g|avif)$/i.test(last)) segments[segments.length - 1] = `${last}.PNG`;
+        return `/m_nft_image/${encodeURIComponent(collectionName)}/${segments.map(encodeURIComponent).join('/')}`;
+    }
+
+    function getNFTUpgradeCost(nft) {
+        return 5;
+    }
+
     function giftArtworkMarkup(gift, className = 'gift-artwork') {
         const artwork = getGiftArtwork(gift);
         if (!artwork) return '';
@@ -70,6 +82,8 @@
     }
 
     window.getGiftArtwork = getGiftArtwork;
+    window.getModelImagePath = getModelImagePath;
+    window.getNFTUpgradeCost = getNFTUpgradeCost;
     window.giftArtworkMarkup = giftArtworkMarkup;
     window.mountGiftAnimations = mountGiftAnimations;
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observeStarText, { once: true });

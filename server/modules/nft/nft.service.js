@@ -1,3 +1,5 @@
+import { getModelImagePath } from '../../car-models.js';
+
 export class NFTService {
     constructor(db) {
         this.db = db;
@@ -428,7 +430,7 @@ export class NFTService {
 
             // Если NFT улучшен (update=1) и есть модель
             if (nft.update === 1 && nft.modelData && nft.modelData.file_name) {
-                const modelImagePath = `/m_nft_image/${nft.collection_name}/${nft.modelData.file_name}.PNG`;
+                const modelImagePath = getModelImagePath(nft.collection_name, nft.modelData.file_name);
 
                 // Если есть данные фона, создаем градиентный фон
                 let backgroundStyle = '';

@@ -41,7 +41,7 @@ function displayNFTImageForHistory(nft, options = {}) {
         }
         
         // Путь к изображению модели
-        const modelImagePath = `/m_nft_image/${collectionName}/${modelData.file_name}.PNG`;
+        const modelImagePath = window.getModelImagePath(collectionName, modelData.file_name);
         
         html = `
             <div class="${sizeClass} upgraded-nft-display" 

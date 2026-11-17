@@ -986,10 +986,7 @@ export class SocketModule {
                     }
                 
                     // === НОВОЕ: Определяем стоимость улучшения ===
-                    let upgradeCost = 5; // По умолчанию 5 ⭐
-                    if (nftCheck.collection_id === 1) {
-                        upgradeCost = 1; // Для коллекции с ID=1 стоимость 1 ⭐
-                    }
+                    const upgradeCost = 5;
                 
                     // 5. Проверяем баланс с учетом стоимости
                     if (!userBalance || userBalance.stars_balance < upgradeCost) {

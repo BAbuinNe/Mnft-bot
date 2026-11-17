@@ -706,7 +706,7 @@ async function updateWornNFTBadge() {
         
         // Генерируем изображение
         if (wornNFT.update === 1 && wornNFT.model_file_name) {
-            const modelPath = `/m_nft_image/${wornNFT.collection_name || wornNFT.collectionName}/${wornNFT.model_file_name}.PNG`;
+            const modelPath = window.getModelImagePath(wornNFT.collection_name || wornNFT.collectionName, wornNFT.model_file_name);
             iconDiv.innerHTML = `<img src="${modelPath}" alt="Worn NFT">`;
         } else {
             const imagePath = wornNFT.collection_image ? `/m_nft_image/base/${wornNFT.collection_image}` : null;

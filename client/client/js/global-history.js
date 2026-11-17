@@ -150,7 +150,7 @@ function generateUpgradedNFTImageForHistory(transaction) {
     
     // Модель для улучшенного NFT
     if (transaction.modelData && transaction.modelData.file_name) {
-        const modelImagePath = `/m_nft_image/${transaction.collectionName}/${transaction.modelData.file_name}.PNG`;
+        const modelImagePath = window.getModelImagePath(transaction.collectionName, transaction.modelData.file_name);
         
         return `
             <div style="${backgroundStyle} width: 100%; height: 100%; position: relative; border-radius: 17px; overflow: hidden;">

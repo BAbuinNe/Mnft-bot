@@ -433,7 +433,7 @@ async function getFilterContent(filterType) {
                     const isSelected = currentFilters.model.includes(modelId);
 
                     const imagePath = model.file_name ? 
-                        `/m_nft_image/${collectionName}/${model.file_name}.PNG` : null;
+                        window.getModelImagePath(collectionName, model.file_name) : null;
 
                     let imageHtml = '';
                     if (imagePath) {
@@ -1528,7 +1528,7 @@ function generateNFTImageHTML(nft) {
 
     if (nft.update === 1 && nft.modelData && nft.modelData.file_name) {
         // Улучшенный NFT - только изображение модели
-        const modelImagePath = `/m_nft_image/${nft.collectionName || nft.collection_name}/${nft.modelData.file_name}.PNG`;
+        const modelImagePath = window.getModelImagePath(nft.collectionName || nft.collection_name, nft.modelData.file_name);
         
         return `
             <div style="width: 100%; height: 100%; position: relative; display: flex; align-items: center; justify-content: center;">

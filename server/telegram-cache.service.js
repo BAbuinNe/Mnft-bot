@@ -2,6 +2,7 @@ import fs from 'fs';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getModelImagePath } from './car-models.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -313,7 +314,7 @@ export class TelegramCacheService {
                     patternFileName: nft.pattern_file_name,
                     // Формируем путь к изображению
                     imageUrl: nft.update === 1 && nft.model_file_name 
-                        ? `/m_nft_image/${nft.collection_name}/${nft.model_file_name}.PNG`
+                        ? getModelImagePath(nft.collection_name, nft.model_file_name)
                         : nft.collection_image 
                             ? `/m_nft_image/base/${nft.collection_image}`
                             : null

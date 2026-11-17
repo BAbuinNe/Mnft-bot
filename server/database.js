@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { seedCarModels } from './car-models.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const requestContext = new AsyncLocalStorage();
@@ -29,7 +30,7 @@ export async function openDatabase() {
                 : client.execute({ sql, args });
         };
 
-        return {
+        const database = {
             withContext(callback) {
                 return requestContext.run({ transaction: null }, callback);
             },
@@ -76,6 +77,8 @@ export async function openDatabase() {
                 await client.close();
             }
         };
+        await seedCarModels(database);
+        return database;
     }
 
     const [{ open }, sqlite3] = await Promise.all([
@@ -87,11 +90,14 @@ export async function openDatabase() {
         console.warn('⚠️ TURSO is not configured; using a clean in-memory database. Data will not survive function restarts.');
         const database = await open({ filename: ':memory:', driver: sqlite3.default.Database });
         await database.exec(await readFile(path.join(here, 'schema.sql'), 'utf8'));
+        await seedCarModels(database);
         return database;
     }
 
-    return open({
+    const database = await open({
         filename: path.resolve(here, '../db/mark.db'),
         driver: sqlite3.default.Database
     });
+    await seedCarModels(database);
+    return database;
 }

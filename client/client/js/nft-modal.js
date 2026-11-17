@@ -56,7 +56,7 @@ function generateUpgradedNFTDisplay(nft, containerSelector, size = 'medium') {
     
     // 3. Модель (центрированная как в истории)
     if (nft.modelData && nft.modelData.file_name) {
-        const modelImagePath = `/m_nft_image/${nft.collectionName || nft.collection_name}/${nft.modelData.file_name}.PNG`;
+        const modelImagePath = window.getModelImagePath(nft.collectionName || nft.collection_name, nft.modelData.file_name);
         
         container.innerHTML = `
             <div style="${backgroundStyle} width: 100%; height: 100%; position: relative; border-radius: 8px; overflow: hidden;">
@@ -722,10 +722,7 @@ function upgradeNFT() {
     if (!currentNFT) return;
     
     // Определяем стоимость улучшения
-    let upgradeCost = 5; // По умолчанию
-    if (currentNFT.collectionId === 1) {
-        upgradeCost = 1;
-    }
+    const upgradeCost = window.getNFTUpgradeCost(currentNFT);
     
     console.log(`🔼 Запрос на улучшение NFT за ${upgradeCost} ⭐:`, currentNFT);
     
@@ -775,7 +772,7 @@ function updateNFTFooter() {
     if (canUpgrade) {
         modalFooter.innerHTML = `
             <button class="filter-modal-upgrade" onclick="upgradeNFT()">
-                Улучшить 1⭐
+                Улучшить 5⭐
             </button>
         `;
     } else {
@@ -819,10 +816,7 @@ function updateNFTButtons(isOwner, price, forSale = false) {
     const isUpgraded = currentNFT?.update === 1;
     
     // === НОВОЕ: Определяем стоимость улучшения для показа в UI ===
-    let upgradeCost = 5; // По умолчанию 5 ⭐
-    if (currentNFT?.collectionId === 1) {
-        upgradeCost = 1; // Для коллекции с ID=1 стоимость 1 ⭐
-    }
+    const upgradeCost = window.getNFTUpgradeCost(currentNFT);
     
     if (canUpgrade) {
         console.log(`✅ Показываем кнопку Улучшить за ${upgradeCost} ⭐`);
@@ -2043,7 +2037,7 @@ function updateNFTModalImage(nft) {
     // 3. Обновляем изображение NFT в превью (оставляем как есть)
     if (nft.update === 1 && nft.modelData && nft.modelData.file_name) {
         // Улучшенный NFT - берем тот же путь что и в маркете
-        const modelImagePath = `/m_nft_image/${nft.collectionName || nft.collection_name}/${nft.modelData.file_name}.PNG`;
+        const modelImagePath = window.getModelImagePath(nft.collectionName || nft.collection_name, nft.modelData.file_name);
         
         nftPreview.innerHTML = `
             <div style="width: 100%; height: 100%; border-radius: 12px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;">
