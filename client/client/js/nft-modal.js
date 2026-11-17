@@ -2055,7 +2055,12 @@ function updateNFTModalImage(nft) {
         nftPreview.style.background = 'transparent';
     } else {
         // Не улучшенный NFT
-        if (nft.image && (nft.image.startsWith('/') || nft.image.startsWith('http'))) {
+        const giftArtwork = window.giftArtworkMarkup?.(nft, 'gift-modal-artwork');
+        if (giftArtwork) {
+            nftPreview.innerHTML = giftArtwork;
+            nftPreview.style.background = 'transparent';
+            window.mountGiftAnimations?.(nftPreview);
+        } else if (nft.image && (nft.image.startsWith('/') || nft.image.startsWith('http'))) {
             nftPreview.innerHTML = `<img src="${nft.image}" alt="${nft.fullName}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 12px;">`;
         } else {
             nftPreview.innerHTML = `<span style="font-size: 3.5em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">${nft.image || '🎴'}</span>`;

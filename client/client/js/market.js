@@ -317,6 +317,7 @@ function displayMarketNFTs(nfts) {
             </div>
         `;
     }).join('');
+    window.mountGiftAnimations?.(marketGrid);
 }
 
 function getBrightness(hexColor) {

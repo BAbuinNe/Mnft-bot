@@ -1376,6 +1376,7 @@ async function loadInventoryItems() {
                 </div>
             `;
         }).join('');
+        window.mountGiftAnimations?.(inventoryGrid);
         
         console.log('✅ Инвентарь успешно загружен с серверной фильтрацией');
         window.nftLoadInProgress = false;
@@ -1522,6 +1523,9 @@ function getRarityColor(rarity) {
 
 function generateNFTImageHTML(nft) {
     // Функция теперь возвращает только изображение без фона
+    const giftArtwork = window.giftArtworkMarkup?.(nft);
+    if (giftArtwork && nft.update !== 1) return giftArtwork;
+
     if (nft.update === 1 && nft.modelData && nft.modelData.file_name) {
         // Улучшенный NFT - только изображение модели
         const modelImagePath = `/m_nft_image/${nft.collectionName || nft.collection_name}/${nft.modelData.file_name}.PNG`;

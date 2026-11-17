@@ -92,8 +92,13 @@ class PurchaseManager {
         if (nftIcon && nft) {
             // Очищаем содержимое
             nftIcon.innerHTML = '';
-            
-            if (isImageUrl) {
+            const giftArtwork = window.giftArtworkMarkup?.(nft, 'purchase-gift-artwork');
+
+            if (giftArtwork) {
+                nftIcon.innerHTML = giftArtwork;
+                window.mountGiftAnimations?.(nftIcon);
+                nftIcon.style.background = 'transparent';
+            } else if (isImageUrl) {
                 // Если это URL изображения
                 const img = document.createElement('img');
                 img.src = nft.image;

@@ -442,8 +442,7 @@ function displayAvailableNFTs(nfts) {
                 </div>
                     
                 <div class="inventory-item-image" style="background: ${rarityColor};">
-                    <img src="${nft.image || '🎴'}" alt="${nft.fullName}" class="nft-image" 
-                     style="width: 100%; height: 100%; object-fit: contain; font-size: 2em; text-align: center; line-height: 100px;">
+                    ${window.giftArtworkMarkup?.(nft, 'nft-image') || `<img src="${nft.image || '🎴'}" alt="${nft.fullName}" class="nft-image" style="width: 100%; height: 100%; object-fit: contain; font-size: 2em; text-align: center; line-height: 100px;">`}
                 </div>
                 <div class="inventory-item-info" style="background: linear-gradient(to top, rgba(0,0,0,0.4), transparent 30px), ${rarityColor};">
                     <h4 class="nft-name">${nft.fullName || 'NFT #' + (nft.number || '?')}</h4>
@@ -462,6 +461,7 @@ function displayAvailableNFTs(nfts) {
             </div>
         `;
     }).join('');
+    window.mountGiftAnimations?.(giftsGrid);
 }
 
 // Просмотр подарка
