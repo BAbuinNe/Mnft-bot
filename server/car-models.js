@@ -61,5 +61,5 @@ export function getModelImagePath(collectionName, fileName) {
     const segments = String(fileName).split('/');
     const last = segments[segments.length - 1];
     if (!/\.(png|webp|jpe?g|avif)$/i.test(last)) segments[segments.length - 1] = `${last}.PNG`;
-    return `/m_nft_image/${encodeURIComponent(collectionName)}/${segments.map(encodeURIComponent).join('/')}`;
+    return `m_nft_image/${encodeURIComponent(collectionName)}/${segments.map(encodeURIComponent).join('/')}`;
 }
