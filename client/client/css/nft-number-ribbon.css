@@ -40,3 +40,16 @@
         height: 28px;
     }
 }
+
+/* Keep the existing on-sale information visible without covering the number. */
+.inventory-item-info .nft-on-sale-marker {
+    display: inline-block;
+    margin: 0 8px 6px;
+    padding: 2px 7px;
+    border-radius: 7px;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.24);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15px;
+}
