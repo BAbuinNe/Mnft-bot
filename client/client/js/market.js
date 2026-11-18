@@ -280,9 +280,7 @@ function displayMarketNFTs(nfts) {
         return `
             <div class="inventory-item" onclick="viewMarketNFT(${nft.id})" 
                  style="${cardBackgroundStyle} animation-delay: ${index * 0.05}s; position: relative;">
-                <h4 class="nft-supply-indicator market-nft-number">
-                    #${nft.number || '?'}
-                </h4>
+                ${window.nftNumberRibbonMarkup?.(nft) || ''}
 
                 ${patternHtml}
                 <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -489,7 +487,7 @@ function isCurrentUserOwner(ownerId) {
 function viewMarketNFT(nftId) {
     console.log('👀 Открытие NFT из маркета:', nftId);
     
-    const clickedElement = event?.currentTarget;
+    const clickedElement = window.event?.currentTarget || null;
     
     // Добавляем визуальный фидбек сразу при нажатии
     if (clickedElement) {
@@ -747,13 +745,24 @@ function getRarityBySupplyMarket(totalSupply) {
 // Функция для получения коллекций (как в профиле)
 async function fetchCollectionsForMarket(forceRefresh = false) {
     return fetchWithCache('collections', async () => {
+        try {
+            if (window.fetchNFTCollections) return await window.fetchNFTCollections();
+        } catch (error) {
+            console.warn('Market collections HTTP unavailable, trying Socket.IO:', error);
+        }
+
         if (window.socket && window.socket.connected) {
             return new Promise((resolve) => {
+                const onCollections = data => {
+                    clearTimeout(timeout);
+                    resolve(data.success && Array.isArray(data.collections) ? data.collections : []);
+                };
+                const timeout = setTimeout(() => {
+                    window.socket.off('collections_list', onCollections);
+                    resolve([]);
+                }, 5000);
+                window.socket.once('collections_list', onCollections);
                 window.socket.emit('get_collections');
-                window.socket.once('collections_list', (data) => {
-                    resolve(data.success ? data.collections : []);
-                });
-                setTimeout(() => resolve([]), 5000);
             });
         }
         return [];
