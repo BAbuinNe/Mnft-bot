@@ -1261,20 +1261,34 @@ async function fetchBackgroundsForMarket(forceRefresh = false) {
         return [];
     }, forceRefresh);
 }
-ModelsForMarket
 
 async function fetchModelsForMarket(forceRefresh = false) {
     return fetchWithCache('models', async () => {
+        // HTTP works even when Telegram's WebSocket transport is unavailable.
+        try {
+            if (window.fetchNFTModels) {
+                const models = await window.fetchNFTModels();
+                window.cachedModels = models;
+                return models;
+            }
+        } catch (error) {
+            console.warn('HTTP model catalog unavailable, trying Socket.IO:', error);
+        }
+
         if (window.socket && window.socket.connected) {
             return new Promise((resolve) => {
-                window.socket.emit('get_models');
-                window.socket.once('models_list', (data) => {
-                    const models = data.success ? data.models : [];
-                    // Сохраняем в глобальный кэш
+                const onModels = (data) => {
+                    clearTimeout(timeout);
+                    const models = data.success && Array.isArray(data.models) ? data.models : [];
                     window.cachedModels = models;
                     resolve(models);
-                });
-                setTimeout(() => resolve([]), 5000);
+                };
+                const timeout = setTimeout(() => {
+                    window.socket.off('models_list', onModels);
+                    resolve([]);
+                }, 5000);
+                window.socket.once('models_list', onModels);
+                window.socket.emit('get_models');
             });
         }
         return [];
