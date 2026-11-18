@@ -60,6 +60,45 @@
         return result.models;
     }
 
+    async function fetchNFTCollections() {
+        const response = await fetch('https://mnft-bot-backend.vercel.app/api/collections', {
+            mode: 'cors',
+            cache: 'no-cache'
+        });
+        if (!response.ok) throw new Error(`NFT collections HTTP ${response.status}`);
+        const result = await response.json();
+        if (!result.success || !Array.isArray(result.collections)) {
+            throw new Error('Invalid NFT collections response');
+        }
+        return result.collections;
+    }
+
+    function getNFTNumberRibbonStyle(nft) {
+        // Match the diagonal number stripe to the actual NFT card background.
+        const background = nft?.backgroundData || {};
+        const base = background.back_0 || background.back_100 ||
+            (typeof window.getRarityColor === 'function'
+                ? window.getRarityColor(nft?.rarity)
+                : '#6950a1');
+        const validHex = /^#?([0-9a-f]{6}|[0-9a-f]{3})$/i.test(String(base));
+        if (!validHex) return '--nft-ribbon-bg:#594186';
+        let hex = String(base).replace(/^#/, '');
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        const channels = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16));
+        // Darken slightly for white-number contrast, retaining background hue.
+        const darkened = channels.map(v => Math.min(255, Math.max(0, Math.round(v * 0.68))));
+        const color = '#' + darkened.map(v => v.toString(16).padStart(2, '0')).join('');
+        return '--nft-ribbon-bg:' + color;
+    }
+
+    function nftNumberRibbonMarkup(nft) {
+        const raw = nft?.number;
+        if (raw === undefined || raw === null || String(raw).trim() === '') return '';
+        const number = String(raw).replace(/[^0-9]/g, '').slice(0, 12);
+        if (!number) return '';
+        return `<div class="nft-number-ribbon" style="${getNFTNumberRibbonStyle(nft)}" aria-label="NFT номер ${number}"><span>#${number}</span></div>`;
+    }
+
     function getNFTUpgradeCost(nft) {
         return 5;
     }
@@ -122,6 +161,8 @@
     window.getGiftArtwork = getGiftArtwork;
     window.getModelImagePath = getModelImagePath;
     window.fetchNFTModels = fetchNFTModels;
+    window.fetchNFTCollections = fetchNFTCollections;
+    window.nftNumberRibbonMarkup = nftNumberRibbonMarkup;
     window.getNFTUpgradeCost = getNFTUpgradeCost;
     window.giftArtworkMarkup = giftArtworkMarkup;
     window.mountGiftAnimations = mountGiftAnimations;
