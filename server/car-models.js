@@ -56,10 +56,33 @@ export async function seedCarModels(db) {
     }
 }
 
+function modelFolder(name) {
+    const value = String(name || '').trim();
+    const aliases = {
+        car: 'Cars', cars: 'Cars',
+        cap: 'Cap', caps: 'Cap',
+        pencil: 'Pencil', pencils: 'Pencil',
+        pepe: 'Pepe', pepes: 'Pepe'
+    };
+    return aliases[value.toLowerCase()] || value;
+}
+
 export function getModelImagePath(collectionName, fileName) {
-    if (!collectionName || !fileName) return '';
-    const segments = String(fileName).split('/');
-    const last = segments[segments.length - 1];
-    if (!/\.(png|webp|jpe?g|avif)$/i.test(last)) segments[segments.length - 1] = `${last}.PNG`;
-    return `m_nft_image/${encodeURIComponent(collectionName)}/${segments.map(encodeURIComponent).join('/')}`;
+    if (!fileName) return '';
+    const value = String(fileName).trim().replace(/\\/g, '/');
+    if (/^https?:\/\//i.test(value)) return value;
+    const raw = value.replace(/^\/+/, '').replace(/^m_nft_image\//i, '');
+    const segments = raw.split('/').filter(part => part && part !== '.' && part !== '..');
+    if (!segments.length) return '';
+    if (segments.length === 1) {
+        if (!collectionName) return '';
+        segments.unshift(modelFolder(collectionName));
+    } else {
+        segments[0] = modelFolder(segments[0]);
+    }
+    const lastIndex = segments.length - 1;
+    if (!/\.(png|webp|jpe?g|avif)$/i.test(segments[lastIndex])) {
+        segments[lastIndex] += segments[0] === 'Cars' ? '.webp' : '.PNG';
+    }
+    return '/m_nft_image/' + segments.map(encodeURIComponent).join('/');
 }
