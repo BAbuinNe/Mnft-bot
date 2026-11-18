@@ -14,12 +14,50 @@
         return null;
     }
 
+    // The database uses collection names (Car/Cars/Caps/etc.), while image folders
+    // use their historical case-sensitive names.
+    function modelFolder(name) {
+        const value = String(name || '').trim();
+        const aliases = {
+            car: 'Cars', cars: 'Cars',
+            cap: 'Cap', caps: 'Cap',
+            pencil: 'Pencil', pencils: 'Pencil',
+            pepe: 'Pepe', pepes: 'Pepe'
+        };
+        return aliases[value.toLowerCase()] || value;
+    }
+
     function getModelImagePath(collectionName, fileName) {
-        if (!collectionName || !fileName) return '';
-        const segments = String(fileName).split('/');
-        const last = segments[segments.length - 1];
-        if (!/\.(png|webp|jpe?g|avif)$/i.test(last)) segments[segments.length - 1] = `${last}.PNG`;
-        return `m_nft_image/${encodeURIComponent(collectionName)}/${segments.map(encodeURIComponent).join('/')}`;
+        if (!fileName) return '';
+        const value = String(fileName).trim().replace(/\\/g, '/');
+        if (/^https?:\/\//i.test(value)) return value;
+        const raw = value.replace(/^\/+/, '').replace(/^m_nft_image\//i, '');
+        const parts = raw.split('/').filter(part => part && part !== '.' && part !== '..');
+        if (!parts.length) return '';
+        if (parts.length === 1) {
+            if (!collectionName) return '';
+            parts.unshift(modelFolder(collectionName));
+        } else {
+            parts[0] = modelFolder(parts[0]);
+        }
+        const lastIndex = parts.length - 1;
+        if (!/\.(png|webp|jpe?g|avif)$/i.test(parts[lastIndex])) {
+            parts[lastIndex] += parts[0] === 'Cars' ? '.webp' : '.PNG';
+        }
+        return '/m_nft_image/' + parts.map(encodeURIComponent).join('/');
+    }
+
+    async function fetchNFTModels() {
+        const response = await fetch('https://mnft-bot-backend.vercel.app/api/models', {
+            mode: 'cors',
+            cache: 'no-cache'
+        });
+        if (!response.ok) throw new Error(`Model catalog HTTP ${response.status}`);
+        const result = await response.json();
+        if (!result.success || !Array.isArray(result.models)) {
+            throw new Error('Invalid model catalog response');
+        }
+        return result.models;
     }
 
     function getNFTUpgradeCost(nft) {
@@ -83,6 +121,7 @@
 
     window.getGiftArtwork = getGiftArtwork;
     window.getModelImagePath = getModelImagePath;
+    window.fetchNFTModels = fetchNFTModels;
     window.getNFTUpgradeCost = getNFTUpgradeCost;
     window.giftArtworkMarkup = giftArtworkMarkup;
     window.mountGiftAnimations = mountGiftAnimations;
