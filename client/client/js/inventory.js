@@ -55,7 +55,7 @@ let filtersSnapshot = null;
 async function openFilterModal(filterType) {
     console.log('🔧 openFilterModal вызвана с типом:', filterType);
     
-    const clickedElement = event?.currentTarget;
+    const clickedElement = window.event?.currentTarget || null;
     
     // Добавляем визуальный фидбек сразу при нажатии
     if (clickedElement) {
@@ -1346,15 +1346,8 @@ async function loadInventoryItems() {
             
                     ${patternHtml}
             
-                    <!-- СТИКЕР РЕДКОСТИ (повернутый на 45°) -->
-                    ${showSticker ? `
-                        <div class="nft-rarity-sticker ${stickerClass}">
-                            <div class="nft-rarity-sticker-container">
-                                ${stickerText}
-                            </div>
-                        </div>
-                    ` : ''}
-            
+                    ${window.nftNumberRibbonMarkup?.(nft) || ''}
+
                     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
                         background: linear-gradient(to top, rgba(13, 13, 16, 0.6) 0%, 
                         rgba(13, 13, 16, 0.15) 30%, 
@@ -1372,6 +1365,7 @@ async function loadInventoryItems() {
                         <h4 class="nft-name" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
                             ${nft.fullName || 'NFT #' + (nft.number || '?')}
                         </h4>
+                        ${isOnSale ? '<span class="nft-on-sale-marker">Маркет</span>' : ''}
                     </div>
                 </div>
             `;
@@ -1887,13 +1881,24 @@ async function fetchProfileWithCache(cacheKey, fetchFunction, forceRefresh = fal
 
 async function fetchProfileCollections(forceRefresh = false) {
     return fetchProfileWithCache('collections', async () => {
+        try {
+            if (window.fetchNFTCollections) return await window.fetchNFTCollections();
+        } catch (error) {
+            console.warn('Profile collections HTTP unavailable, trying Socket.IO:', error);
+        }
+
         if (window.socket && window.socket.connected) {
             return new Promise((resolve) => {
+                const onCollections = data => {
+                    clearTimeout(timeout);
+                    resolve(data.success && Array.isArray(data.collections) ? data.collections : []);
+                };
+                const timeout = setTimeout(() => {
+                    window.socket.off('collections_list', onCollections);
+                    resolve([]);
+                }, 5000);
+                window.socket.once('collections_list', onCollections);
                 window.socket.emit('get_collections');
-                window.socket.once('collections_list', (data) => {
-                    resolve(data.success ? data.collections : []);
-                });
-                setTimeout(() => resolve([]), 5000);
             });
         }
         return [];
