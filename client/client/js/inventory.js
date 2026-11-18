@@ -1902,13 +1902,24 @@ async function fetchProfileCollections(forceRefresh = false) {
 
 async function fetchProfileModels(forceRefresh = false) {
     return fetchProfileWithCache('models', async () => {
+        try {
+            if (window.fetchNFTModels) return await window.fetchNFTModels();
+        } catch (error) {
+            console.warn('Profile model catalog HTTP failed, trying Socket.IO:', error);
+        }
+
         if (window.socket && window.socket.connected) {
             return new Promise((resolve) => {
+                const onModels = (data) => {
+                    clearTimeout(timeout);
+                    resolve(data.success && Array.isArray(data.models) ? data.models : []);
+                };
+                const timeout = setTimeout(() => {
+                    window.socket.off('models_list', onModels);
+                    resolve([]);
+                }, 5000);
+                window.socket.once('models_list', onModels);
                 window.socket.emit('get_models');
-                window.socket.once('models_list', (data) => {
-                    resolve(data.success ? data.models : []);
-                });
-                setTimeout(() => resolve([]), 5000);
             });
         }
         return [];
