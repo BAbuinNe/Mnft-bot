@@ -193,6 +193,28 @@ app.get('/api/collections', async (req, res) => {
     }
 });
 
+
+/**
+ * Public NFT model metadata used by the market and profile filters.
+ * HTTP fallback is essential for Mini App clients without a Socket.IO connection.
+ */
+app.get('/api/models', async (req, res) => {
+    try {
+        const models = await db.all(`
+            SELECT m.id, m.name, m.rarity, m.file_name,
+                   m.collection_id, mnc.name AS collection_name
+            FROM models m
+            LEFT JOIN m_nft_collections mnc ON m.collection_id = mnc.id
+            ORDER BY mnc.name ASC, m.rarity DESC, m.name ASC
+        `);
+        res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
+        res.json({ success: true, models });
+    } catch (error) {
+        console.error('Model catalog API error:', error);
+        res.status(500).json({ success: false, models: [], error: 'Model catalog unavailable' });
+    }
+});
+
 function paymentUser(req, res) {
     if (!paymentsReady) { res.status(503).json({ success: false, error: 'Payments are not configured' }); return null; }
     const userId = verifyInitData(req.get('x-telegram-init-data'), process.env.TELEGRAM_BOT_TOKEN);
