@@ -311,7 +311,7 @@ app.post('/webhook/telegram', async (req, res) => {
             reply_markup: {
                 inline_keyboard: [[{
                     text: '🚀 Открыть Маркет NFT',
-                    web_app: { url: 'https://mnft-miniapp.vercel.app/' }
+                    web_app: { url: 'https://babuinne.github.io/Mnft-bot/?v=20261119-profile-ribbon1' }
                 }], [{
                     text: '📢 Channel',
                     url: 'https://t.me/mnft_channel'
