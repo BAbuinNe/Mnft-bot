@@ -33,6 +33,11 @@ export async function seedCarModels(db) {
         return;
     }
 
+    await db.run(
+        'UPDATE m_nft_collections SET updateble = 1 WHERE id = ? AND updateble <> 1',
+        [collection.id]
+    );
+
     for (const [name, fileName, rarity] of carModels) {
         const existing = await db.get(
             `SELECT id FROM models WHERE collection_id = ? AND lower(name) = lower(?) LIMIT 1`,

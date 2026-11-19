@@ -303,7 +303,7 @@ function confirmUpgrade() {
     if (window.socket && window.socket.connected) {
         sendUpgradeRequest(upgradeNFTData.id, upgradeCost);
     } else {
-        simulateUpgrade(upgradeCost);
+        handleUpgradeError('Нет соединения с сервером. Перезапустите Mini App и попробуйте снова.');
     }
 }
 
@@ -315,23 +315,16 @@ function sendUpgradeRequest(nftId, cost) {
     
     if (!user?.id) {
         console.error('❌ User ID not found');
+        handleUpgradeError('Не удалось определить аккаунт Telegram. Перезапустите Mini App.');
         return;
     }
     
     if (window.socket && window.socket.connected) {
         console.log('📡 Socket подключен, отправляю запрос...');
         
-        // Удаляем старый обработчик, если он есть
-        window.socket.off('upgrade_result');
-        
-        window.socket.emit('upgrade_nft', {
-            nftId: nftId,
-            userId: user.id
-        });
-        
-        console.log('📨 Запрос отправлен, жду ответ...');
-        
-        window.socket.once('upgrade_result', (data) => {
+        let responseHandled = false;
+        const onUpgradeResult = (data) => {
+            responseHandled = true;
             console.log('📥 Получен ответ от сервера:', data);
             
             if (data.success) {
@@ -339,12 +332,21 @@ function sendUpgradeRequest(nftId, cost) {
             } else {
                 handleUpgradeError(data.error);
             }
+        };
+        window.socket.once('upgrade_result', onUpgradeResult);
+
+        window.socket.emit('upgrade_nft', {
+            nftId: nftId,
+            userId: user.id
         });
         
+        console.log('📨 Запрос отправлен, жду ответ...');
+
         // Таймаут на случай, если ответ не пришел
         setTimeout(() => {
-            const confirmButton = document.querySelector('.upgrade-actions .primary');
-            if (confirmButton && confirmButton.innerHTML.includes('mini-spinner')) {
+            const confirmButton = document.querySelector('.upgrade-actions .confirm-btn');
+            if (!responseHandled && confirmButton && confirmButton.innerHTML.includes('mini-spinner')) {
+                window.socket.off('upgrade_result', onUpgradeResult);
                 console.error('⏰ Таймаут ожидания ответа от сервера');
                 handleUpgradeError('Таймаут ожидания ответа');
             }
@@ -374,14 +376,6 @@ function handleUpgradeError(error) {
             message: error || 'Не удалось улучшить NFT'
         });
     }
-}
-
-function simulateUpgrade(cost) {
-    console.log('⚠️ Нет соединения, эмуляция улучшения');
-    
-    setTimeout(() => {
-        completeUpgrade(upgradeNFTData.id, cost);
-    }, 1000);
 }
 
 function completeUpgrade(nftId, cost, newBalance, updatedNFT) {
