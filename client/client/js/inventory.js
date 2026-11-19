@@ -1303,6 +1303,9 @@ async function loadInventoryItems() {
             const isUpgraded = nft.update === 1;
             const isPinned = nft.pinned && nft.pinned > 0;
             const cardBackgroundStyle = getNFTCardBackground(nft);
+            const cardTitle = String(nft.fullName || nft.collectionName || nft.collection_name || nft.modelName || `NFT #${nft.number || '?'}`)
+                .replace(/\s+#\s*\d+\s*$/, '')
+                .trim();
             const patternHtml = (isUpgraded && nft.patternData && nft.patternData.file_name) 
                 ? getNFTCardFullPatternProfile(`/m_nft_image/patterns/${nft.patternData.file_name}.svg`,
                     nft.backgroundData?.back_0)
@@ -1363,7 +1366,7 @@ async function loadInventoryItems() {
             
                     <div class="inventory-item-info" style="position: relative; z-index: 3;">
                         <h4 class="nft-name" style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
-                            ${nft.fullName || 'NFT #' + (nft.number || '?')}
+                            ${cardTitle}
                         </h4>
                         ${isOnSale ? '<span class="nft-on-sale-marker">Маркет</span>' : ''}
                     </div>

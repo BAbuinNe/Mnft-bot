@@ -32,12 +32,31 @@
     white-space: nowrap;
 }
 
+/* Keep profile ribbons compact while leaving marketplace numbers unchanged. */
+#inventoryGrid .inventory-item > .nft-number-ribbon {
+    top: 15px;
+    right: -33px;
+    width: 124px;
+    height: 25px;
+}
+
+#inventoryGrid .inventory-item > .nft-number-ribbon span {
+    font-size: clamp(9px, 2.3vw, 12px);
+}
+
 @media (max-width: 390px) {
     .inventory-item > .nft-number-ribbon {
         top: 14px;
         right: -41px;
         width: 136px;
         height: 28px;
+    }
+
+    #inventoryGrid .inventory-item > .nft-number-ribbon {
+        top: 13px;
+        right: -36px;
+        width: 120px;
+        height: 23px;
     }
 }
 
